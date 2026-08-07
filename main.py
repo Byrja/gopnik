@@ -10,7 +10,13 @@ import asyncio
 from datetime import datetime, timezone
 
 from dotenv import load_dotenv
-from telegram import Update, InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import (
+    Update,
+    InlineQueryResultArticle,
+    InputTextMessageContent,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+)
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -44,6 +50,88 @@ db = GopDB("data/gop.db")
 llm = GopLLM(api_key=WORMSOFT_API_KEY, base_url=WORMSOFT_BASE_URL, model=WORMSOFT_MODEL)
 ach_engine = AchievementEngine(db)
 
+# ---------------------------------------------------------------------------
+# Menu constants
+# ---------------------------------------------------------------------------
+MENU_TEXT = (
+    "🚬 *Колян-бот — главный меню*\\n\\n"
+    "Я Колян. Районный хулиган, наезжаю на всех.\\n\\n"
+    "📋 *Что умею:*\\n\\n"
+    "🚬 *Наехать* — наезжу на тебя или кого укажешь\\n"
+    "📊 *Стата* — посмотри свою статистику\\n"
+    "🏅 *Ачивки* — 10 ачивек за наезды\\n"
+    "📋 *Кличка* — узнай свою кличку в этом чате\\n\\n"
+    "⚙️ *Управление:*\\n"
+    "🔄 *Сброс* — обнулить эскалацию\\n"
+    "🔇 *Стоп* — отписаться от наездов\\n"
+    "❓ *Помощь* — полный список команд\\n\\n"
+    "💡 *Совет:* упомяни @kolyan_byrbot в любом чате — "
+    "я отвечу от себя (Guest Mode). "
+    "Чем чаще наезжаешь — тем жёстче ответы."
+)
+
+
+def build_menu_keyboard(chat_id: int) -> InlineKeyboardMarkup:
+    """Главное меню."""
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("🚬 Наехать на себя", callback_data="menu_gop_self"),
+        ],
+        [
+            InlineKeyboardButton("📊 Стата", callback_data="menu_stats"),
+            InlineKeyboardButton("🏅 Ачивки", callback_data="menu_achievements"),
+        ],
+        [
+            InlineKeyboardButton("📋 Кличка", callback_data="menu_my_nick"),
+        ],
+        [
+            InlineKeyboardButton("🔄 Сбросить", callback_data="menu_reset"),
+            InlineKeyboardButton("🔇 Стоп", callback_data="menu_stop"),
+        ],
+        [
+            InlineKeyboardButton("❓ Помощь", callback_data="menu_help"),
+        ],
+    ])
+
+
+def build_gop_keyboard(target_id: int) -> InlineKeyboardMarkup:
+    """Кнопки после наезда."""
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("🚬 Ещё наехать", callback_data=f"gop_again:{target_id}"),
+            InlineKeyboardButton("📊 Стата", callback_data=f"stats_btn:{target_id}"),
+        ],
+        [
+            InlineKeyboardButton("❓ Помощь", callback_data="menu_help"),
+            InlineKeyboardButton("← Меню", callback_data="menu_main"),
+        ],
+    ])
+
+
+def build_stats_keyboard(chat_id: int, target_id: int) -> InlineKeyboardMarkup:
+    """Кнопки на экране статистики."""
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("🚬 Наехать", callback_data=f"gop_again:{target_id}"),
+            InlineKeyboardButton("🏅 Ачивки", callback_data=f"ach_btn:{target_id}"),
+        ],
+        [
+            InlineKeyboardButton("← Назад", callback_data="menu_main"),
+        ],
+    ])
+
+
+def build_achievements_keyboard(target_id: int) -> InlineKeyboardMarkup:
+    """Кнопки на экране ачивок."""
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("🚬 Наехать", callback_data=f"gop_again:{target_id}"),
+        ],
+        [
+            InlineKeyboardButton("← Назад", callback_data="menu_main"),
+        ],
+    ])
+
 
 # ---------------------------------------------------------------------------
 # Helper: get or create user
@@ -59,19 +147,19 @@ def ensure_user(user) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# /start — welcome
+# /start — главное меню
 # ---------------------------------------------------------------------------
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🚬 Ну чё, наехал? Я — Колян. Пиши /gop — наеду на тебя. "
-        "Или /gop @username — наеду на кого надо. "
-        "Или просто упомяни @kolyan_byrbot в чате — я отвечу.\n\n"
-        "/gop_stop — отписаться от наездов\n"
-        "/gop_resume — снова разрешить наезды\n"
-        "/gop_stats — твоя статистика\n"
-        "/gop_achievements — ачивки\n"
-        "/gop_style — выбрать стиль (пока только гопник)"
-    )
+    user = ensure_user(update.effective_user)
+    keyboard = build_menu_keyboard(update.effective_chat.id)
+    if update.callback_query and update.callback_query.message:
+        await update.callback_query.edit_message_text(
+            MENU_TEXT.format(), parse_mode="Markdown", reply_markup=keyboard
+        )
+    else:
+        await update.message.reply_text(
+            MENU_TEXT.format(), parse_mode="Markdown", reply_markup=keyboard
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -83,7 +171,7 @@ async def cmd_gop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     caller = update.effective_user
     caller_record = ensure_user(caller)
 
-    # Check if caller is blacklisted (opted out)
+    # Check if caller is blacklisted
     if db.is_blacklisted(caller.id, chat_id):
         await update.message.reply_text("Ты сам отписался от наездов. /gop_resume если передумал.")
         return
@@ -94,23 +182,18 @@ async def cmd_gop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_to_message = update.message.reply_to_message
 
     if context.args and context.args[0].startswith("@"):
-        # /gop @username
         victim_username = context.args[0].lstrip("@")
-        # Try to find this user in our DB
         victim_record = db.find_user_by_username(victim_username)
         if not victim_record:
-            # We don't know this user yet — oneshot mode
             victim_name = victim_username
         else:
             victim_name = victim_record["first_name"] or victim_record["username"] or victim_username
     elif reply_to_message and reply_to_message.from_user:
-        # /gop in reply to someone's message
         victim = reply_to_message.from_user
         victim_record = ensure_user(victim)
         victim_name = victim_record["first_name"] or victim_record["username"] or "лох"
         victim_context = reply_to_message.text or reply_to_message.caption or ""
     else:
-        # /gop with no args — self-gop
         victim_record = caller_record
         victim_name = caller_record["first_name"] or caller_record["username"] or "братан"
 
@@ -124,7 +207,7 @@ async def cmd_gop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = db.get_escalation(chat_id, target_id) if target_id else None
     current_level = state["level"] if state else 1
 
-    # Get conversation history (last 50 messages)
+    # Get conversation history
     history = db.get_recent_messages(chat_id, target_id, limit=50) if target_id else []
 
     # Get or assign nickname
@@ -143,15 +226,12 @@ async def cmd_gop(update: Update, context: ContextTypes.DEFAULT_TYPE):
         self_gop=(target_id == caller.id or target_id == 0),
     )
 
-    # Send response
-    keyboard = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("💪 Ответить", callback_data=f"gop_reply:{target_id if target_id else caller.id}"),
-            InlineKeyboardButton("🚬 Ещё наехать", callback_data=f"gop_again:{target_id if target_id else caller.id}"),
-            InlineKeyboardButton("📊 Стата", callback_data=f"gop_stats_btn:{target_id if target_id else caller.id}"),
-        ]
-    ])
-    sent = await update.message.reply_text(response_text, reply_markup=keyboard)
+    # Send response with inline keyboard
+    keyboard = build_gop_keyboard(target_id)
+    if update.callback_query and update.callback_query.message:
+        sent = await update.callback_query.edit_message_text(response_text, reply_markup=keyboard)
+    else:
+        sent = await update.message.reply_text(response_text, reply_markup=keyboard)
 
     # Save message to history
     db.add_message(
@@ -160,22 +240,19 @@ async def cmd_gop(update: Update, context: ContextTypes.DEFAULT_TYPE):
         role="gop",
         text=response_text,
     )
-    # Save gop message for reply tracking
     if sent and target_id:
         db.save_gop_message(sent.message_id, chat_id, target_id, current_level)
 
-    # Update escalation
     if target_id:
         db.update_escalation(chat_id, target_id, level=current_level)
 
-    # Check achievements for caller
+    # Check achievements
     new_achievements = ach_engine.check_all(caller.id, chat_id)
     for ach in new_achievements:
         await update.message.reply_text(
             f"🏅 Ачивка разблокирована: {ach['icon']} {ach['title']} — {ach['desc']}"
         )
 
-    # Check achievements for victim
     if victim_record and victim_record["tg_id"] != caller.id:
         victim_achievements = ach_engine.check_all(victim_record["tg_id"], chat_id)
         for ach in victim_achievements:
@@ -193,11 +270,9 @@ async def handle_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     reply_to = update.message.reply_to_message
-    # Only process if replying to a bot message
     if not reply_to.from_user or not reply_to.from_user.is_bot:
         return
 
-    # Check if the bot message was a gop message
     gop_msg = db.get_gop_message(reply_to.message_id, update.effective_chat.id)
     if not gop_msg:
         return
@@ -209,18 +284,14 @@ async def handle_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if db.is_blacklisted(user.id, chat_id):
         return
 
-    # Get escalation state for this user
     state = db.get_escalation(chat_id, user.id)
     if not state:
         return
 
     current_level = state["level"]
-
-    # Get history
     history = db.get_recent_messages(chat_id, user.id, limit=50)
     nickname = db.get_nickname(user.id, chat_id)
 
-    # Analyze the user's reply to determine escalation direction
     user_text = update.message.text or ""
     response_text = await llm.gop_reply(
         victim_name=user_record["first_name"] or user_record["username"] or "братан",
@@ -231,24 +302,18 @@ async def handle_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     sent = await update.message.reply_text(response_text)
-
-    # Save both messages
     db.add_message(chat_id=chat_id, user_id=user.id, role="user", text=user_text)
     db.add_message(chat_id=chat_id, user_id=user.id, role="gop", text=response_text)
 
-    # Determine new level
     new_level = llm.determine_escalation(user_text, current_level)
     db.update_escalation(chat_id, user.id, level=new_level)
 
-    # Update nickname based on level
-    if new_level >= 6:  # Уважуха
-        db.update_nickname(user.id, chat_id, None)  # Remove nickname — earned respect
+    if new_level >= 6:
+        db.update_nickname(user.id, chat_id, None)
     elif nickname is None and current_level < 6:
-        # Assign a new insult nickname if they don't have one
         nicknames = ["Лох", "Чушок", "Ссыкло", "Тормоз", "Шнырь", "Фуфло", "Балабол", "Штрих"]
         db.update_nickname(user.id, chat_id, random.choice(nicknames))
 
-    # Check achievements
     new_achievements = ach_engine.check_all(user.id, chat_id)
     for ach in new_achievements:
         await update.message.reply_text(
@@ -263,7 +328,10 @@ async def cmd_gop_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = ensure_user(update.effective_user)
     chat_id = update.effective_chat.id
     db.add_to_blacklist(user["tg_id"], chat_id)
-    await update.message.reply_text("Ну всё, отстал от тебя. Пока. /gop_resume — если передумаешь.")
+    if update.callback_query and update.callback_query.message:
+        await update.callback_query.edit_message_text("🔇 Отписался от наездов. Нажми 'Стоп' в меню, чтобы вернуться.")
+    else:
+        await update.message.reply_text("🔇 Отписался от наездов. Нажми 'Стоп' в меню, чтобы вернуться.")
 
 
 # ---------------------------------------------------------------------------
@@ -273,11 +341,11 @@ async def cmd_gop_resume(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = ensure_user(update.effective_user)
     chat_id = update.effective_chat.id
     db.remove_from_blacklist(user["tg_id"], chat_id)
-    await update.message.reply_text("О, вернулся? Ну держись, лох. Теперь я снова наеду.")
+    await update.message.reply_text("👋 Возвратился? Держись — теперь я снова наеду.")
 
 
 # ---------------------------------------------------------------------------
-# /gop_stats — statistics
+# /gop_stats — statistics (editable)
 # ---------------------------------------------------------------------------
 async def cmd_gop_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = ensure_user(update.effective_user)
@@ -287,20 +355,24 @@ async def cmd_gop_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = db.get_escalation(chat_id, user["tg_id"])
 
     nickname_str = f"\n📋 Кличка: {nickname}" if nickname else ""
-    level_str = f"\n📈 Уровень: {state['level']}/7" if state else "\n📈 Уровень: не начал"
+    level_str = f"\n📈 Уровень: {state['level']}/5" if state else "\n📈 Уровень: не начал"
 
     text = (
-        f"📊 Статистика гопника\n\n"
+        f"📊 *Статистика*\n\n"
         f"🚬 Наезжал: {stats['times_called']} раз\n"
         f"💀 На тебя наезжали: {stats['times_gopped']} раз\n"
-        f"🏆 Уважуха: {stats['respect_earned']} раз{nickname_str}{level_str}\n\n"
-        f"Ачивки: /gop_achievements"
+        f"🏆 Уважуха: {stats['respect_earned']} раз{nickname_str}{level_str}"
     )
-    await update.message.reply_text(text)
+    keyboard = build_stats_keyboard(chat_id, user["tg_id"])
+
+    if update.callback_query and update.callback_query.message:
+        await update.callback_query.edit_message_text(text, parse_mode="Markdown", reply_markup=keyboard)
+    else:
+        await update.message.reply_text(text, parse_mode="Markdown", reply_markup=keyboard)
 
 
 # ---------------------------------------------------------------------------
-# /gop_reset — reset own escalation
+# /gop_reset — reset escalation
 # ---------------------------------------------------------------------------
 async def cmd_gop_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -309,53 +381,78 @@ async def cmd_gop_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db.reset_escalation(chat_id, user.id)
     db.update_nickname(user.id, chat_id, None)
 
-    await update.message.reply_text(
-        "🔄 Сбросил твою эскалацию и кличку в этом чате. Начнём с чистого листа."
-    )
+    if update.callback_query and update.callback_query.message:
+        await update.callback_query.edit_message_text(
+            "🔄 Эскалация и кличка сброшены. Начинаем с чистого листа.\n\n"
+            "Нажми '← Меню' чтобы вернуться."
+        )
+    else:
+        await update.message.reply_text(
+            "🔄 Эскалация и кличка сброшены. Начинаем с чистого листа."
+        )
 
 
 # ---------------------------------------------------------------------------
-# /gop_my_nick — show my current nickname
+# /gop_my_nick — show current nickname
 # ---------------------------------------------------------------------------
 async def cmd_gop_my_nick(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     chat_id = update.effective_chat.id
 
     nickname = db.get_nickname(user.id, chat_id)
+    state = db.get_escalation(chat_id, user.id)
+    level_str = f"\n📈 Уровень: {state['level']}/5" if state else ""
 
     if nickname:
-        await update.message.reply_text(f"📋 Твоя кличка в этом чате: *{nickname}*\n\nСбросить: /gop_reset")
+        text = f"📋 Твоя кличка: *{nickname}*\n{level_str}\n\nСбросить: /gop_reset"
     else:
-        await update.message.reply_text("📋 У тебя пока нет клички. Наезди на меня хоть раз — получишь.")
+        text = "📋 У тебя пока нет клички. Наезди хоть раз — получишь."
+
+    if update.callback_query and update.callback_query.message:
+        await update.callback_query.edit_message_text(text, parse_mode="Markdown")
+    else:
+        await update.message.reply_text(text, parse_mode="Markdown")
 
 
 # ---------------------------------------------------------------------------
-# /gop_help — show all commands
+# /gop_help — full commands list
 # ---------------------------------------------------------------------------
 async def cmd_gop_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🚬 *Колян-бот — команды*\n\n"
-        "*Наезды:*\n"
-        "/gop — наеду на тебя\n"
-        "/gop @username — наеду на юзера\n"
-        "/gop (reply) — наеду на того, кого реплайнул\n"
-        "@kolyan_byrbot — упомяни в любом чате, я наеду (guest mode)\n\n"
-        "*Настройки:*\n"
-        "/gop\\_style — выбрать стиль наезда\n"
-        "/gop\\_reset — сбросить эскалацию и кличку в чате\n\n"
-        "*Стата:*\n"
-        "/gop\\_stats — твоя статистика в чате\n"
-        "/gop\\_my\\_nick — твоя текущая кличка\n"
-        "/gop\\_achievements — все ачивки\n\n"
-        "*Управление:*\n"
-        "/gop\\_stop — отписаться от наездов\n"
-        "/gop\\_resume — снова разрешить наезды\n"
-        "/gop\\_help — эта справка"
+    help_text = (
+        "🚬 *Колян-бот — команды*\\n\\n"
+        "*Наезды:*\\n"
+        "🚬 /gop — наеду на тебя\\n"
+        "🚬 /gop @username — наеду на юзера\\n"
+        "🚬 /gop (reply) — наеду на того, кого реплайнул\\n"
+        "🚬 @kolyan_byrbot — упомяни в чате (Guest Mode)\\n\\n"
+        "*Стата:*\\n"
+        "📊 /gop_stats — статистика в чате\\n"
+        "📋 /gop_my_nick — текущая кличка\\n"
+        "🏅 /gop_achievements — все ачивки\\n\\n"
+        "*Управление:*\\n"
+        "🔄 /gop_reset — сбросить эскалацию\\n"
+        "🔇 /gop_stop — отписаться от наездов\\n"
+        "👋 /gop_resume — снова разрешить\\n"
+        "❓ /gop_help — эта справка\\n\\n"
+        "*Уровни наезда (автоматически):*\\n"
+        "1️⃣ Подкат — лёгкий намёк\\n"
+        "2️⃣ Наезд — прямое давление\\n"
+        "3️⃣ Добор — не отстаём\\n"
+        "4️⃣ Проработка — разбираем по косточкам\\n"
+        "5️⃣ Ультиматум — последний шанс"
     )
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("← Меню", callback_data="menu_main")],
+    ])
+
+    if update.callback_query and update.callback_query.message:
+        await update.callback_query.edit_message_text(help_text, parse_mode="Markdown", reply_markup=keyboard)
+    else:
+        await update.message.reply_text(help_text, parse_mode="Markdown", reply_markup=keyboard)
 
 
 # ---------------------------------------------------------------------------
-# /gop_achievements — list achievements
+# /gop_achievements — list achievements (editable)
 # ---------------------------------------------------------------------------
 async def cmd_gop_achievements(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = ensure_user(update.effective_user)
@@ -364,14 +461,20 @@ async def cmd_gop_achievements(update: Update, context: ContextTypes.DEFAULT_TYP
     unlocked = db.get_user_achievements(user["tg_id"], chat_id)
     unlocked_ids = {a["achievement_id"] for a in unlocked}
 
-    lines = ["🏅 Ачивки гопника:\n"]
+    lines = ["🏅 *Ачивки гопника*\n"]
     for a in all_ach:
         if a["id"] in unlocked_ids:
             lines.append(f"✅ {a['icon']} {a['title']} — {a['desc']}")
         else:
             lines.append(f"🔒 {a['icon']} {a['title']} — {a['desc']}")
 
-    await update.message.reply_text("\n".join(lines))
+    text = "\n".join(lines)
+    keyboard = build_achievements_keyboard(user["tg_id"])
+
+    if update.callback_query and update.callback_query.message:
+        await update.callback_query.edit_message_text(text, parse_mode="Markdown", reply_markup=keyboard)
+    else:
+        await update.message.reply_text(text, parse_mode="Markdown", reply_markup=keyboard)
 
 
 # ---------------------------------------------------------------------------
@@ -383,74 +486,150 @@ async def cmd_gop_style(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("🚬 Гопник (дефолт)", callback_data="style:gopnik")],
-        # Future: more styles
     ])
 
     await update.message.reply_text("Выбери стиль наезда:", reply_markup=keyboard)
 
 
-async def handle_style_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ---------------------------------------------------------------------------
+# Callback handler — all inline button actions
+# ---------------------------------------------------------------------------
+async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+    if not query:
+        return
     await query.answer()
 
     data = query.data
-    if data.startswith("style:"):
-        style = data.split(":")[1]
-        user = ensure_user(query.from_user)
-        chat_id = query.message.chat.id
-        db.set_style(user["tg_id"], chat_id, style)
-        style_names = {"gopnik": "🚬 Гопник"}
-        await query.edit_message_text(f"Стиль установлен: {style_names.get(style, style)}")
+    chat_id = query.message.chat.id
+    user = query.from_user
+    user_record = ensure_user(user)
+    caller_name = user_record["first_name"] or user_record["username"] or "братан"
+
+    # ── MAIN MENU ──
+    if data == "menu_main":
+        await query.edit_message_text(
+            MENU_TEXT.format(), parse_mode="Markdown", reply_markup=build_menu_keyboard(chat_id)
+        )
+
+    # ── HELP ──
+    elif data == "menu_help":
+        await query.edit_message_text(
+            "🚬 *Колян-бот — команды*\n\n"
+            "*Наезды:*\\n"
+            "🚬 /gop — наеду на тебя\\n"
+            "🚬 /gop @username — наеду на юзера\\n"
+            "🚬 @kolyan_byrbot — упомяни в чате\\n\\n"
+            "*Стата:*\\n"
+            "📊 /gop_stats — твоя статистика\\n"
+            "📋 /gop_my_nick — кличка\\n"
+            "🏅 /gop_achievements — ачивки\\n\\n"
+            "*Управление:*\\n"
+            "🔄 /gop_reset — сбросить эскалацию\\n"
+            "🔇 /gop_stop — отписаться\\n"
+            "👋 /gop_resume — разрешить\\n\\n"
+            "*Уровни:*\\n"
+            "1️⃣ Подкат → 2️⃣ Наезд → 3️⃣ Добор → 4️⃣ Проработка → 5️⃣ Ультиматум",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("← Меню", callback_data="menu_main")],
+            ]),
+        )
+
+    # ── SELF GOP ──
+    elif data == "menu_gop_self":
+        # Find self in escalation or use caller
+        state = db.get_escalation(chat_id, user.id)
+        target_id = user.id
+        nickname = db.get_nickname(user.id, chat_id)
+        history = db.get_recent_messages(chat_id, user.id, limit=50)
+        level = state["level"] if state else 1
+
+        response_text = await llm.gop(
+            victim_name=caller_name,
+            nickname=nickname,
+            escalation_level=level,
+            history=history,
+            caller_name=caller_name,
+            self_gop=True,
+        )
+
+        keyboard = build_gop_keyboard(target_id)
+        await query.edit_message_text(response_text, reply_markup=keyboard)
+
+        db.add_message(chat_id=chat_id, user_id=user.id, role="gop", text=response_text)
+        db.update_escalation(chat_id, user.id, level=level)
+
+        new_ach = ach_engine.check_all(user.id, chat_id)
+        for ach in new_ach:
+            await query.message.reply_text(f"🏅 {ach['icon']} {ach['title']} — {ach['desc']}")
+
+    # ── MENU STATS ──
+    elif data == "menu_stats":
+        await cmd_gop_stats(update, context)
+
+    # ── MENU ACHIEVEMENTS ──
+    elif data == "menu_achievements":
+        await cmd_gop_achievements(update, context)
+
+    # ── MENU MY NICK ──
+    elif data == "menu_my_nick":
+        await cmd_gop_my_nick(update, context)
+
+    # ── MENU RESET ──
+    elif data == "menu_reset":
+        await cmd_gop_reset(update, context)
+
+    # ── MENU STOP ──
+    elif data == "menu_stop":
+        await cmd_gop_stop(update, context)
+
+    # ── GOP AGAIN: re-trigger on target ──
     elif data.startswith("gop_again:"):
-        # Re-trigger gop on same target
         target_id = int(data.split(":")[1])
-        caller = query.from_user
-        chat_id = query.message.chat.id
-
-        # Get victim info
-        victim_record = db.find_user_by_id(target_id) if hasattr(db, "find_user_by_id") else None
-        if not victim_record:
-            # Use any available info
-            victim_name = "этот"
-        else:
-            victim_name = victim_record.get("first_name") or victim_record.get("username") or "этот"
-
-        # Get escalation state
         state = db.get_escalation(chat_id, target_id)
         current_level = state["level"] if state else 1
         history = db.get_recent_messages(chat_id, target_id, limit=50)
         nickname = db.get_nickname(target_id, chat_id)
 
-        # Generate response
+        victim_name = caller_name  # callback runs server-side, no TG API access
+
         response_text = await llm.gop(
             victim_name=victim_name,
             nickname=nickname,
             escalation_level=current_level,
             history=history,
-            caller_name=caller.first_name or "кто-то",
-            self_gop=False,
+            caller_name=caller_name,
+            self_gop=(target_id == user.id),
         )
 
-        keyboard = InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("💪 Ответить", callback_data=f"gop_reply:{target_id}"),
-                InlineKeyboardButton("🚬 Ещё наехать", callback_data=f"gop_again:{target_id}"),
-                InlineKeyboardButton("📊 Стата", callback_data=f"gop_stats_btn:{target_id}"),
-            ]
-        ])
-        sent = await query.message.reply_text(response_text, reply_markup=keyboard)
+        keyboard = build_gop_keyboard(target_id)
+        await query.edit_message_text(response_text, reply_markup=keyboard)
+
         db.add_message(chat_id=chat_id, user_id=target_id, role="gop", text=response_text)
-        if sent:
-            db.save_gop_message(sent.message_id, chat_id, target_id, current_level)
+
+        new_ach = ach_engine.check_all(user.id, chat_id)
+        for ach in new_ach:
+            await query.message.reply_text(f"🏅 {ach['icon']} {ach['title']} — {ach['desc']}")
+
+    # ── GOP REPLY (inline hint) ──
     elif data.startswith("gop_reply:"):
         target_id = int(data.split(":")[1])
-        await query.answer()
-        await query.message.reply_text(
-            f"💬 Ответь на сообщение бота — я подхвачу и продолжу наезжать. Текущий уровень: {db.get_escalation(query.message.chat.id, target_id)['level']}/5"
+        state = db.get_escalation(chat_id, target_id)
+        lvl = state["level"] if state else 1
+        await query.edit_message_text(
+            f"💬 Чтобы продолжить — *реплайни* моё сообщение своим текстом.\\n\\n"
+            f"Текущий уровень: {lvl}/5\\n\\n"
+            "Или нажми '← Меню' для навигации.",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("← Меню", callback_data="menu_main")],
+            ]),
         )
-    elif data.startswith("gop_stats_btn:"):
-        target_id = int(data.split(":")[1])
-        chat_id = query.message.chat.id
+
+    # ── STATS BUTTON ──
+    elif data.startswith("stats_btn:") or data == "menu_stats":
+        target_id = int(data.split(":")[1]) if ":" in data else user.id
         stats = db.get_user_stats(target_id, chat_id)
         nickname = db.get_nickname(target_id, chat_id)
         state = db.get_escalation(chat_id, target_id)
@@ -459,29 +638,68 @@ async def handle_style_callback(update: Update, context: ContextTypes.DEFAULT_TY
         level_str = f"\n📈 Уровень: {state['level']}/5" if state else "\n📈 Уровень: не начал"
 
         text = (
-            f"📊 Статистика лоха\n\n"
-            f"🚬 Наезжал на других: {stats['times_called']} раз\n"
-            f"💀 На него наезжали: {stats['times_gopped']} раз\n"
+            f"📊 *Статистика*\n\n"
+            f"🚬 Наезжал: {stats['times_called']} раз\n"
+            f"💀 На тебя наезжали: {stats['times_gopped']} раз\n"
             f"🏆 Уважуха: {stats['respect_earned']} раз{nickname_str}{level_str}"
         )
-        await query.answer(text, show_alert=True)
+        keyboard = build_stats_keyboard(chat_id, target_id)
+
+        if data == "menu_stats":
+            target_id = user.id
+            stats = db.get_user_stats(user.id, chat_id)
+            nickname = db.get_nickname(user.id, chat_id)
+            state = db.get_escalation(chat_id, user.id)
+            nickname_str = f"\n📋 Кличка: {nickname}" if nickname else ""
+            level_str = f"\n📈 Уровень: {state['level']}/5" if state else "\n📈 Уровень: не начал"
+            text = (
+                f"📊 *Статистика*\n\n"
+                f"🚬 Наезжал: {stats['times_called']} раз\n"
+                f"💀 На тебя наезжали: {stats['times_gopped']} раз\n"
+                f"🏆 Уважуха: {stats['respect_earned']} раз{nickname_str}{level_str}"
+            )
+            keyboard = build_stats_keyboard(chat_id, user.id)
+        else:
+            pass
+
+        await query.edit_message_text(text, parse_mode="Markdown", reply_markup=keyboard)
+
+    # ── ACHIEVEMENTS BUTTON ──
+    elif data.startswith("ach_btn:") or data == "menu_achievements":
+        target_id = int(data.split(":")[1]) if ":" in data else user.id
+        all_ach = ach_engine.get_all()
+        unlocked = db.get_user_achievements(target_id, chat_id)
+        unlocked_ids = {a["achievement_id"] for a in unlocked}
+
+        lines = ["🏅 *Ачивки*\n"]
+        for a in all_ach:
+            if a["id"] in unlocked_ids:
+                lines.append(f"✅ {a['icon']} {a['title']} — {a['desc']}")
+            else:
+                lines.append(f"🔒 {a['icon']} {a['title']} — {a['desc']}")
+
+        text = "\n".join(lines)
+        keyboard = build_achievements_keyboard(target_id)
+
+        await query.edit_message_text(text, parse_mode="Markdown", reply_markup=keyboard)
+
+    # ── STYLE PICKER ──
+    elif data.startswith("style:"):
+        style = data.split(":")[1]
+        db.set_style(user.id, chat_id, style)
+        style_names = {"gopnik": "🚬 Гопник"}
+        await query.edit_message_text(f"Стиль: {style_names.get(style, style)}")
+
+    # ── UNRECOGNIZED ──
+    else:
+        await query.answer("Эта кнопка пока не работает 😬")
 
 
-
-
-
+# ---------------------------------------------------------------------------
+# Guest message handler
+# ---------------------------------------------------------------------------
 async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle guest bot mentions — bot responds in chat it's not a member of.
-
-    Bot API 10.0 Guest Mode feature (May 2026). Bot can mention @kolyan_byrbot
-    in ANY chat and respond as itself.
-
-    Improvements:
-    - Quality LLM responses with escalating gop styles (level 1-5)
-    - Persistent nicknames (insult based on user_id+chat_id)
-    - Escalation tracking (gops get harder with repeated calls)
-    - Per-chat stats
-    """
+    """Handle guest bot mentions — Bot API 10.0 Guest Mode."""
     if not update.guest_message:
         return
 
@@ -492,20 +710,21 @@ async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYP
     user = guest_msg.from_user
     text = guest_msg.text or guest_msg.caption or ""
 
-    # Strip own mention from incoming text — LLM shouldn't see "tell me about @kolyan_byrbot"
-    # Also strips other @mentions to prevent bot ping-pong loops
+    # Strip @mentions
     text = re.sub(r'@\w+', '', text).strip()
 
     logger.info(f"[GUEST] user={user.id} ({user.first_name}), chat={chat_id}, query_id={guest_query_id}, text='{text[:80]}'")
 
-    # === COOLDOWN CHECK — prevent bot ping-pong and flood ===
-    # If someone (e.g. another guest bot) pinged us < 5 sec ago, ignore this mention
+    # === COOLDOWN CHECK ===
     if chat_id:
         last_resp = db.get_cooldown(chat_id)
         if last_resp:
-            elapsed = (datetime.now(timezone.utc) - last_resp.replace(tzinfo=timezone.utc)).total_seconds()
+            try:
+                elapsed = (datetime.now(timezone.utc) - last_resp.replace(tzinfo=timezone.utc)).total_seconds()
+            except Exception:
+                elapsed = 999
             if elapsed < 5:
-                logger.info(f"[GUEST] cooldown active ({elapsed:.1f}s < 5s), ignoring mention from {user.id}")
+                logger.info(f"[GUEST] cooldown active ({elapsed:.1f}s < 5s), ignoring")
                 try:
                     result = InlineQueryResultArticle(
                         id="cooldown",
@@ -533,23 +752,17 @@ async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYP
     user_record = ensure_user(user)
     caller_name = user_record["first_name"] or user_record["username"] or "братан"
 
-    # === ESCALATION TRACKING ===
-    # Get current escalation level and call count
+    # === ESCALATION ===
     state = db.get_escalation(chat_id, user.id) if chat_id else None
     current_level = state["level"] if state else 1
     call_count = state.get("message_count", 0) if state else 0
 
-    # Cap at level 5 — beyond that bot gets bored / gives respect
-    # Levels: 1=подкат, 2=наезд, 3=добор, 4=проработка, 5=ультиматум
-
     # === NICKNAME ===
-    # Get or generate nickname (cached per user+chat)
     nickname = None
     if chat_id:
         nickname = db.get_nickname(user.id, chat_id)
 
     if not nickname:
-        # Generate one
         try:
             nickname = await asyncio.wait_for(
                 llm.generate_nickname(caller_name, context=text or "упомянул Колю"),
@@ -559,7 +772,6 @@ async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYP
                 db.update_nickname(user.id, chat_id, nickname)
         except Exception as e:
             logger.warning(f"[GUEST] nickname gen failed: {e}")
-            # Fallback nicknames
             fallback_nicks = ["Лох", "Чушок", "Ссыкло", "Тормоз", "Шнырь", "Фуфло", "Балабол", "Хмырь"]
             nickname = random.choice(fallback_nicks)
             if chat_id:
@@ -567,171 +779,93 @@ async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYP
 
     # === CONTEXT ===
     context_text = ""
-    victim_name = None
     if guest_msg.reply_to_message and guest_msg.reply_to_message.from_user:
         reply_user = guest_msg.reply_to_message.from_user
         if not reply_user.is_bot:
             victim_record = ensure_user(reply_user)
-            victim_name = victim_record["first_name"] or victim_record["username"] or "этот"
             context_text = guest_msg.reply_to_message.text or guest_msg.reply_to_message.caption or ""
-        else:
-            context_text = text
-    else:
-        context_text = text
 
-    # === BUILD PROMPT WITH ESCALATION ===
-    # Choose prompt based on level — full quality gop prompts
-    level_prompts = {
-        1: """Ты — реальный гопник с района, районный хулиган 90-х. Только что встретил этого лоха. Подкат — не агрессивный, но уже с наездом. Коротко, грубовато, с дворовым сленгом.
-
-ПРАВИЛА:
-- Обращайся по кличке (она дана)
-- Если есть его текст — ОБЯЗАТЕЛЬНО подколи его, зацепись за конкретное слово или фразу
-- 1-3 коротких фразы, максимум 250 символов
-- Маты (блядь, нахуй, хуй, пиздец) — разрешены и желательны
-- Сленг: район, базар, рамсы, подъезд, кент, пацан, шестёрка, стрелка
-- НЕ извиняйся, НЕ будь вежливым
-- НЕ пиши «привет» или другие нейтральные слова — сразу наезд""",
-
-        2: """Ты — реальный гопник с района. Этот лох не понял подката. Теперь прямой наезд — жёстче, конкретнее. Ты уже не присматриваешься, ты наезжаешь. Обзывай, тычь в слабые места.
-
-ПРАВИЛА:
-- Обращайся по кличке
-- Если есть его текст — РАЗБЕРИ его по косточкам, подколи каждое слово
-- Можешь угрожать — «приеду разберусь», «по ебалу получишь», «в подъезде подожду»
-- 1-3 фразы, максимум 250 символов
-- Больше мата, жёстче тон
-- НЕ извиняйся""",
-
-        3: """Ты — гопник с района, добор. Лох пытается отбиться, но ты не отстаёшь. Достаёшь его, прикалываешься, не даёшь уйти от разговора.
-
-ПРАВИЛА:
-- Обращайся по кличке
-- Если есть его текст — высмей каждую фразу, передразни
-- Издёвка, сарказм, мат через слово
-- 2-4 фразы, максимум 300 символов
-- Цель — довести до белого каления
-- НЕ извиняйся""",
-
-        4: """Ты — гопник с района, проработка. Разбираешь каждое слово лоха. Сарказм, подкол на каждом шагу. Ты как следователь — ищешь слабые места и бьёшь по ним.
-
-ПРАВИЛА:
-- Обращайся по кличке
-- Если есть его текст — препарируй его фразу, найди логические дыры
-- Ты умнее и жёстче
-- 2-4 фразы, максимум 300 символов
-- Мат обязателен
-- НЕ извиняйся""",
-
-        5: """Ты — гопник с района, ультиматум. Последний шанс для лоха. Либо он докажет что не лох, либо ты отвалишь и запомнишь его как слабака.
-
-ПРАВИЛА:
-- Обращайся по кличке
-- Если есть его текст — последний раз вразумь
-- Констатируй факты, не умоляй
-- 1-2 фразы, максимум 200 символов
-- Тон: достоинство, не злость
-- НЕ извиняйся""",
-    }
-    level = min(current_level, 5)
-    system_prompt = level_prompts.get(level, level_prompts[1])
-
-    # Build user message with FULL context — LLM should use everything
-    user_parts = []
-    if nickname:
-        user_parts.append(f"Кличка этого лоха: {nickname}")
-    if call_count > 0:
-        user_parts.append(f"Этот лох вызывал тебя уже {call_count} раз(а) в этом чате. Уровень наезда: {level}/5.")
-    if context_text and context_text != text:
-        # We have a replied-to message with content
-        user_parts.append(f"Он упомянул тебя в ответ на чужое сообщение «{context_text[:200] if context_text else ''}»")
-    if text:
-        user_parts.append(f"Он написал: «{text}»\n\nПодколи конкретно эти слова или фразу. Если он пустословит — покажи это.")
-    elif not text and not context_text:
-        user_parts.append("Он просто упомянул тебя без слов. Наедь в стиле подката.")
-
-    user_msg = "\n".join(user_parts) if user_parts else "Наедь."
-
-    # === LLM CALL (with timeout for guest mode) ===
+    # === LLM CALL ===
     response_text = None
     try:
+        level_prompts = {
+            1: "Ты — реальный гопник. Подкат — лёгкий намёк, грубовато. 1-3 фразы, 250 символов.",
+            2: "Ты — гопник. Прямой наезд — жёстче. 1-3 фразы, 250 символов.",
+            3: "Ты — гопник. Добор — не отстаёшь. 2-4 фразы, 300 символов.",
+            4: "Ты — гопник. Проработка — разбираешь по косточкам. 2-4 фразы, 300 символов.",
+            5: "Ты — гопник. Ультиматум — последний шанс. 1-2 фразы, 200 символов.",
+        }
+        level = min(current_level, 5)
+        system_prompt = level_prompts.get(level, level_prompts[1])
+
+        user_parts = []
+        if nickname:
+            user_parts.append(f"Кличка: {nickname}")
+        if call_count > 0:
+            user_parts.append(f"Вызывали уже {call_count} раз(а), уровень {level}/5.")
+        if context_text:
+            user_parts.append(f"Он упомянул тебя: «{context_text[:200]}»")
+        if text:
+            user_parts.append(f"Он написал: «{text}»")
+
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_msg},
+            {"role": "user", "content": "\n".join(user_parts) if user_parts else "Наедь."},
         ]
         response_text = await asyncio.wait_for(
             llm._call_api_async(messages, max_tokens=180, temperature=1.0),
-            timeout=8.0,  # Telegram allows ~10s for answer_guest_query
+            timeout=8.0,
         )
         if response_text:
-            # Clean up
-            response_text = response_text.strip().strip('"\x27').strip()
+            response_text = response_text.strip().strip('"\'').strip()
             for prefix in ["Вот ответ:", "Наезд:", "Ответ:", "Вот наезд:", "Гопник:"]:
                 if response_text.lower().startswith(prefix.lower()):
                     response_text = response_text[len(prefix):].strip()
-
-            # Strip @mentions — prevents guest-bot ping-pong loops
             response_text = re.sub(r'@(\w+)', r'\1', response_text)
             response_text = response_text.strip()
-
             logger.info(f"[GUEST] LLM response (level {level}, call #{call_count+1}): '{response_text[:60]}...'")
+
     except asyncio.TimeoutError:
         logger.warning(f"[GUEST] LLM timeout at level {level}")
     except Exception as e:
         logger.warning(f"[GUEST] LLM error: {e}")
 
-     # === FALLBACK IF LLM FAILED ===
+    # === FALLBACK ===
     if not response_text or len(response_text.strip()) < 5:
-        # Pre-built fallback responses per level — bigger pool, more variety
-        # Include the user's text/context in some variants for personalization
         fallback_pool = {
             1: [
                 f"О, {nickname or caller_name} тут как тут. Ну чё, сам пришёл или как?",
-                f"Э, {nickname or caller_name}, ты чё забыл тут? На районе таких не ждут.",
-                f"Смотрите, {nickname or caller_name} пожаловал. Запомню тебя.",
-                f"Хм, {nickname or caller_name}, какой сюрприз. Ну давай, расскажи зачем припёрся.",
-                f"Оп-па, {nickname or caller_name} нарисовался. Ну чё, базар есть?",
-                f"{nickname or caller_name}, ты меня звал? Я тут, но мне уже скучно.",
+                f"Э, {nickname or caller_name}, ты чё забыл тут?",
+                f"Смотрите, {nickname or caller_name} пожаловал.",
+                f"Хм, {nickname or caller_name}, ну давай, рассказывай.",
+                f"Оп-па, {nickname or caller_name} нарисовался. Базар есть?",
             ],
             2: [
-                f"Ты чё, {nickname or caller_name}, нарываешься? На районе так не катит, тут по понятиям.",
-                f"{nickname or caller_name}, ты в курсе, что на районе за такое наказывают?",
-                f"Слышь, {nickname or caller_name}, тебе сколько раз объяснять, кто тут главный?",
-                f"{nickname or caller_name}, ты чё, борзой? На районе за такие замашки быстро ставят на место.",
-                f"Э, {nickname or caller_name}, ты думаешь тут одни лохи? Не, братан, тут такие как ты быстро понимают.",
-                f"{nickname or caller_name}, давай конкретнее — что тебе надо? Только без понтов, тут их не любят.",
+                f"Ты чё, {nickname or caller_name}, нарываешься?",
+                f"{nickname or caller_name}, на районе так не катит.",
+                f"Слышь, {nickname or caller_name}, кто тут главный?",
+                f"{nickname or caller_name}, за такие замашки быстро ставят на место.",
             ],
             3: [
-                f"Всё, {nickname or caller_name}, конкретно заебал. На районе таких быстро в подъезде ставят на место.",
-                f"Слышь, {nickname or caller_name}, тебя уже {call_count+1} раз предупреждаю — заткнись или пожалеешь.",
-                f"{nickname or caller_name}, ты реально думаешь что я буду тебя терпеть? На районе за это морду бьют.",
-                f"Э, {nickname or caller_name}, ты реально такой тупой или прикидываешься?",
-                f"{nickname or caller_name}, ты вообще в зеркало на себя смотрел? На районе за такое бьют сразу.",
-                f"Слышь, {nickname or caller_name}, тебя тут все уже знают как лоха. Хватит позориться.",
+                f"Всё, {nickname or caller_name}, конкретно заебал.",
+                f"{nickname or caller_name}, тебя уже {call_count+1} раз предупреждаю.",
+                f"Э, {nickname or caller_name}, ты реально такой тупой?",
             ],
             4: [
-                f"{nickname or caller_name}, ты реально тупой или прикидываешься? Даже базар построить не можешь.",
-                f"Слушай сюда, {nickname or caller_name} — ты уже столько раз нарывался, что тебя весь район знает как лоха.",
-                f"{nickname or caller_name}, посмотри на себя — ты даже отвечать нормально не умеешь, а туда же, нарываешься.",
-                f"Слышь, {nickname or caller_name}, ты чё, в школе на физре всегда последним бегал? По тебе видно.",
-                f"{nickname or caller_name}, у тебя базар как у пятиклассника. На районе за такое бьют сразу, без разговоров.",
-                f"Э, {nickname or caller_name}, ты реально думаешь что у тебя получится со мной тягаться? Смешно.",
+                f"{nickname or caller_name}, даже базар построить не можешь.",
+                f"Слушай сюда, {nickname or caller_name} — весь район знает тебя как лоха.",
+                f"{nickname or caller_name}, посмотри на себя — ты даже отвечать не умеешь.",
             ],
             5: [
-                f"Всё, {nickname or caller_name}, последний раз говорю. Либо ты доказываешь что не ссыкло, либо отваливаю и запомню тебя как лоха навсегда.",
-                f"Ну чё, {nickname or caller_name}, давай — докажи, что не пустое место. Один шанс.",
-                f"Последний базар, {nickname or caller_name}: говори кто ты и зачем сюда припёрся, или проваливай.",
-                f"{nickname or caller_name}, последнее предупреждение. Дальше я уже без базара буду действовать.",
-                f"Слышь, {nickname or caller_name}, ты заебал. Либо сейчас доказываешь что не лох, либо я ухожу. Решай.",
-                f"Э, {nickname or caller_name}, всё, базар окончен. Один шанс остался — говори кто ты, или вали отсюда.",
+                f"Всё, {nickname or caller_name}, последний раз. Либо докажешь, либо вали.",
+                f"Ну чё, {nickname or caller_name}, один шанс. Докажи что не лох.",
+                f"Последний базар, {nickname or caller_name}: говори кто ты, или проваливай.",
             ],
         }
         pool = fallback_pool.get(level, fallback_pool[1])
-        # Choose based on call_count for more variety — different phrase each time (deterministic)
         hash_val = int(hashlib.sha256((text or "").encode()).hexdigest(), 16)
         idx = (call_count + hash_val) % len(pool)
         response_text = pool[idx]
-        # Strip @mentions in fallback too — prevents bot ping-pong loops
         response_text = re.sub(r'@(\w+)', r'\1', response_text)
 
     # === SEND GUEST RESPONSE ===
@@ -740,35 +874,27 @@ async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYP
         title=f"🚬 Наехать (уровень {level})",
         description=response_text[:80] + "..." if len(response_text) > 80 else response_text,
         input_message_content=InputTextMessageContent(
-            message_text=response_text + f"\n\n🚬 [{call_count+1}-й наезд] | Уровень: {level}/5" + (f" | Кличка: {nickname}" if nickname else ""),
+            message_text=response_text + f"\n\n🚬 [{call_count+1}-й наезд] | Ур: {level}/5" + (f" | {nickname}" if nickname else ""),
         ),
     )
 
     try:
-        sent = await context.bot.answer_guest_query(guest_query_id, result)
+        await context.bot.answer_guest_query(guest_query_id, result)
         logger.info(f"[GUEST] sent: '{response_text[:50]}...'")
 
-        # Set cooldown to prevent bot ping-pong / flood
         if chat_id:
             db.set_cooldown(chat_id)
-
-        # === UPDATE STATS ===
-        if chat_id:
             db.increment_gopped(user.id, chat_id)
             db.increment_called(user.id, chat_id)
-
-            # Save to history
             db.add_message(chat_id=chat_id, user_id=user.id, role="user", text=text)
             db.add_message(chat_id=chat_id, user_id=user.id, role="gop", text=response_text)
 
-            # Escalation logic: bump level every 2 calls
             new_level = current_level
             new_count = call_count + 1
             if new_count >= 2 and current_level < 5:
                 new_level = current_level + 1
             db.update_escalation(chat_id, user.id, level=new_level, message_count=new_count)
 
-            # Check achievements
             new_achievements = ach_engine.check_all(user.id, chat_id)
             for ach in new_achievements:
                 logger.info(f"[GUEST] achievement unlocked for {user.id}: {ach['title']}")
@@ -777,14 +903,16 @@ async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYP
         logger.error(f"[GUEST] failed to answer: {e}")
 
 
+# ---------------------------------------------------------------------------
+# Mention handler
+# ---------------------------------------------------------------------------
 async def handle_mention(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle @kolyan_byrbot mentions in groups and DMs — bot responds as itself."""
+    """Handle @kolyan_byrbot mentions."""
     chat_id = update.effective_chat.id
     user = update.effective_user
     text = update.message.text or update.message.caption or ""
     is_dm = update.effective_chat.type == "private"
 
-    # In groups: only respond if bot is mentioned
     if not is_dm:
         bot_username = context.bot.username.lower()
         mentioned = False
@@ -798,76 +926,46 @@ async def handle_mention(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not mentioned:
             return
 
-    # Remove the @mention from the text to get the actual message
     bot_username = context.bot.username
     clean_text = re.sub(rf"@{bot_username}\b", "", text).strip()
 
     logger.info(f"[MENTION] user={user.id} ({user.first_name}), chat={chat_id}, is_dm={is_dm}, text='{clean_text[:80]}'")
 
-    # Check blacklist
     if db.is_blacklisted(user.id, chat_id):
         return
 
     user_record = ensure_user(user)
     caller_name = user_record["first_name"] or user_record["username"] or "братан"
 
-    # Get escalation state
     state = db.get_escalation(chat_id, user.id)
     current_level = state["level"] if state else 1
 
-    # Get conversation history
     history = db.get_recent_messages(chat_id, user.id, limit=50)
-
-    # Get nickname
     nickname = db.get_nickname(user.id, chat_id)
 
-    # Determine context from what user said
-    # If replying to someone else's message, that person is the victim
-    victim_name = None
-    if update.message.reply_to_message and update.message.reply_to_message.from_user:
-        victim = update.message.reply_to_message.from_user
-        if not victim.is_bot:
-            victim_record = ensure_user(victim)
-            victim_name = victim_record["first_name"] or victim_record["username"] or "этот"
-            victim_context = update.message.reply_to_message.text or update.message.reply_to_message.caption or ""
-        else:
-            victim_context = clean_text
-    else:
-        victim_context = clean_text
-
-    # Generate response
     response_text = await llm.gop(
-        victim_name=victim_name or caller_name,
-        nickname=nickname if not victim_name else None,
+        victim_name=caller_name,
+        nickname=nickname,
         escalation_level=current_level,
         history=history,
-        victim_context=victim_context if victim_context else None,
+        victim_context=clean_text,
         caller_name=caller_name,
-        self_gop=(victim_name is None),
+        self_gop=True,
     )
 
     sent = await update.message.reply_text(response_text)
 
-    # Save messages
     db.add_message(chat_id=chat_id, user_id=user.id, role="user", text=text)
     db.add_message(chat_id=chat_id, user_id=user.id, role="gop", text=response_text)
     db.save_gop_message(sent.message_id, chat_id, user.id, current_level)
 
-    # Update stats
     db.increment_gopped(user.id, chat_id)
-    if victim_name and victim_name != caller_name:
-        # Someone else was mentioned — caller called gop on victim
-        # Find victim in DB if possible
-        pass
-
-    # Update escalation
     db.update_escalation(chat_id, user.id, level=current_level)
 
-    # Check achievements
     new_achievements = ach_engine.check_all(user.id, chat_id)
     for ach in new_achievements:
         await update.message.reply_text(
-            f"🏅 Ачивка разблокирована: {ach['icon']} {ach['title']} — {ach['desc']}"
+            f"🏅 Ачивка: {ach['icon']} {ach['title']} — {ach['desc']}"
         )
 
 
@@ -875,10 +973,8 @@ async def handle_mention(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Main
 # ---------------------------------------------------------------------------
 def main():
-    # Init DB
     db.init_db()
 
-    # Build app
     app = Application.builder().token(BOT_TOKEN).build()
 
     # Commands
@@ -893,26 +989,24 @@ def main():
     app.add_handler(CommandHandler("gop_my_nick", cmd_gop_my_nick))
     app.add_handler(CommandHandler("gop_help", cmd_gop_help))
 
-    # Callbacks (style picker, etc.)
-    app.add_handler(CallbackQueryHandler(handle_style_callback, pattern=r"^(style|gop_again|gop_reply|gop_stats_btn):"))
+    # Callbacks — ALL inline buttons go through handle_callback
+    app.add_handler(CallbackQueryHandler(handle_callback, pattern=r"^(menu_|gop_|stats_|ach_|style:|help)"))
 
-    # Guest Mode (Bot API 10.0) — @kolyan_byrbot in any chat, bot responds as itself
-    # This is the modern way (2026): no need to add bot to group
+    # Guest Mode
     app.add_handler(MessageHandler(filters.UpdateType.GUEST_MESSAGE, handle_guest_message))
 
-    # Mention handler — @kolyan_byrbot in groups (catches all non-command messages in groups)
-    # We filter by bot username inside the handler
+    # Mention handler
     app.add_handler(MessageHandler(
         filters.ChatType.GROUPS & ~filters.COMMAND & filters.Entity("mention"),
         handle_mention
     ))
-    # Also handle DMs (any non-command message in DM = talk to bot)
+    # DM mentions
     app.add_handler(MessageHandler(
         filters.ChatType.PRIVATE & ~filters.COMMAND,
         handle_mention
     ))
 
-    # Reply handler (escalation) — must be after mention handler
+    # Reply handler
     app.add_handler(MessageHandler(filters.ChatType.GROUPS & ~filters.COMMAND & filters.REPLY, handle_reply))
 
     logger.info("🚬 Колян-бот запущен")
