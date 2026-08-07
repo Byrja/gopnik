@@ -1,0 +1,20 @@
+[Unit]
+Description=Gop Bot - Telegram gopnik bot
+After=network.target
+
+[Service]
+Type=simple
+User=hermes
+Group=hermes
+WorkingDirectory=/srv/openclaw-bus/gop-bot
+ExecStart=/srv/openclaw-bus/gop-bot/.venv/bin/python main.py
+Restart=always
+RestartSec=10
+Environment=BOT_TOKEN=8890849248:AAF7TUMEo-TCwEvBae_FlSaZqOmQfgf1RdM
+Environment=WORMSOFT_API_KEY=3b046efdc08b1198808177c473a9a3eb976acd6ce879bb939f456688882dd06c
+Environment=WORMSOFT_BASE_URL=https://ai.wormsoft.ru/api/gpt/v1
+Environment=WORMSOFT_MODEL=deepseek-ai/deepseek-v4-flash
+Environment=DB_PATH=/srv/openclaw-bus/gop-bot/data/gop.db
+
+[Install]
+WantedBy=multi-user.target
