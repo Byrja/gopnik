@@ -54,23 +54,23 @@ ach_engine = AchievementEngine(db)
 # Menu constants
 # ---------------------------------------------------------------------------
 MENU_TEXT = (
-    "🚬 *Колян-бот — главное меню*\n"
+    "🚬 Колян-бот — главное меню\n"
     "\n"
     "Я Колян. Районный хулиган, наезжаю на всех.\n"
     "\n"
-    "📋 *Что умею:*\n"
+    "📋 Что умею:\n"
     "\n"
-    "🚬 *Наехать* — наезжу на тебя или кого укажешь\n"
-    "📊 *Стата* — посмотри свою статистику\n"
-    "🏅 *Ачивки* — 10 ачивек за наезды\n"
-    "📋 *Кличка* — узнай свою кличку в этом чате\n"
+    "🚬 Наехать — наезжу на тебя или кого укажешь\n"
+    "📊 Стата — посмотри свою статистику\n"
+    "🏅 Ачивки — 10 ачивек за наезды\n"
+    "📋 Кличка — узнай свою кличку в этом чате\n"
     "\n"
-    "⚙️ *Управление:*\n"
-    "🔄 *Сброс* — обнулить эскалацию\n"
-    "🔇 *Стоп* — отписаться от наездов\n"
-    "❓ *Помощь* — полный список команд\n"
+    "⚙️ Управление:\n"
+    "🔄 Сброс — обнулить эскалацию\n"
+    "🔇 Стоп — отписаться от наездов\n"
+    "❓ Помощь — полный список команд\n"
     "\n"
-    "💡 *Совет:* упомяни @kolyan_byrbot в любом чате — "
+    "💡 Совет: упомяни @kolyan_byrbot в любом чате — "
     "я отвечу от себя (Guest Mode). "
     "Чем чаще наезжаешь — тем жёстче ответы."
 )
@@ -159,11 +159,11 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = build_menu_keyboard(update.effective_chat.id)
     if update.callback_query and update.callback_query.message:
         await update.callback_query.edit_message_text(
-            MENU_TEXT.format(), parse_mode="Markdown", reply_markup=keyboard
+            MENU_TEXT.format(), reply_markup=keyboard
         )
     else:
         await update.message.reply_text(
-            MENU_TEXT.format(), parse_mode="Markdown", reply_markup=keyboard
+            MENU_TEXT.format(), reply_markup=keyboard
         )
 
 
@@ -371,9 +371,9 @@ async def cmd_gop_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = build_stats_keyboard(chat_id, user["tg_id"])
 
     if update.callback_query and update.callback_query.message:
-        await update.callback_query.edit_message_text(text, parse_mode="Markdown", reply_markup=keyboard)
+        await update.callback_query.edit_message_text(text, reply_markup=keyboard)
     else:
-        await update.message.reply_text(text, parse_mode="Markdown", reply_markup=keyboard)
+        await update.message.reply_text(text, reply_markup=keyboard)
 
 
 # ---------------------------------------------------------------------------
@@ -414,9 +414,9 @@ async def cmd_gop_my_nick(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = "📋 У тебя пока нет клички. Наезди хоть раз — получишь."
 
     if update.callback_query and update.callback_query.message:
-        await update.callback_query.edit_message_text(text, parse_mode="Markdown")
+        await update.callback_query.edit_message_text(text)
     else:
-        await update.message.reply_text(text, parse_mode="Markdown")
+        await update.message.reply_text(text)
 
 
 # ---------------------------------------------------------------------------
@@ -451,9 +451,13 @@ async def cmd_gop_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ])
 
     if update.callback_query and update.callback_query.message:
-        await update.callback_query.edit_message_text(help_text, parse_mode="Markdown", reply_markup=keyboard)
+        await update.callback_query.edit_message_text(
+            help_text, reply_markup=keyboard
+        )
     else:
-        await update.message.reply_text(help_text, parse_mode="Markdown", reply_markup=keyboard)
+        await update.message.reply_text(
+            help_text, reply_markup=keyboard
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -477,9 +481,9 @@ async def cmd_gop_achievements(update: Update, context: ContextTypes.DEFAULT_TYP
     keyboard = build_achievements_keyboard(user["tg_id"])
 
     if update.callback_query and update.callback_query.message:
-        await update.callback_query.edit_message_text(text, parse_mode="Markdown", reply_markup=keyboard)
+        await update.callback_query.edit_message_text(text, reply_markup=keyboard)
     else:
-        await update.message.reply_text(text, parse_mode="Markdown", reply_markup=keyboard)
+        await update.message.reply_text(text, reply_markup=keyboard)
 
 
 # ---------------------------------------------------------------------------
@@ -514,28 +518,31 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ── MAIN MENU ──
     if data == "menu_main":
         await query.edit_message_text(
-            MENU_TEXT.format(), parse_mode="Markdown", reply_markup=build_menu_keyboard(chat_id)
+            MENU_TEXT.format(), reply_markup=build_menu_keyboard(chat_id)
         )
 
     # ── HELP ──
     elif data == "menu_help":
         await query.edit_message_text(
-            "🚬 *Колян-бот — команды*\n\n"
-            "*Наезды:*\n"
+            "🚬 Колян-бот — команды\n"
+            "\n"
+            "Наезды:\n"
             "🚬 /gop — наеду на тебя\n"
             "🚬 /gop @username — наеду на юзера\n"
-            "🚬 @kolyan_byrbot — упомяни в чате\n\n"
-            "*Стата:*\n"
+            "🚬 @kolyan_byrbot — упомяни в чате\n"
+            "\n"
+            "Стата:\n"
             "📊 /gop_stats — твоя статистика\n"
             "📋 /gop_my_nick — кличка\n"
-            "🏅 /gop_achievements — ачивки\n\n"
-            "*Управление:*\n"
+            "🏅 /gop_achievements — ачивки\n"
+            "\n"
+            "Управление:\n"
             "🔄 /gop_reset — сбросить эскалацию\n"
             "🔇 /gop_stop — отписаться\n"
-            "👋 /gop_resume — разрешить\n\n"
-            "*Уровни:*\n"
+            "👋 /gop_resume — разрешить\n"
+            "\n"
+            "Уровни:\n"
             "1️⃣ Подкат → 2️⃣ Наезд → 3️⃣ Добор → 4️⃣ Проработка → 5️⃣ Ультиматум",
-            parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("← Меню", callback_data="menu_main")],
             ]),
@@ -623,10 +630,9 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         state = db.get_escalation(chat_id, target_id)
         lvl = state["level"] if state else 1
         await query.edit_message_text(
-            f"💬 Чтобы продолжить — *реплайни* моё сообщение своим текстом.\n\n"
+            f"💬 Чтобы продолжить — реплайни моё сообщение своим текстом.\n\n"
             f"Текущий уровень: {lvl}/5\n\n"
             "Или нажми '← Меню' для навигации.",
-            parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("← Меню", callback_data="menu_main")],
             ]),
@@ -667,7 +673,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             pass
 
-        await query.edit_message_text(text, parse_mode="Markdown", reply_markup=keyboard)
+        await query.edit_message_text(text, reply_markup=keyboard)
 
     # ── ACHIEVEMENTS BUTTON ──
     elif data.startswith("ach_btn:") or data == "menu_achievements":
@@ -686,7 +692,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = "\n".join(lines)
         keyboard = build_achievements_keyboard(target_id)
 
-        await query.edit_message_text(text, parse_mode="Markdown", reply_markup=keyboard)
+        await query.edit_message_text(text, reply_markup=keyboard)
 
     # ── STYLE PICKER ──
     elif data.startswith("style:"):
