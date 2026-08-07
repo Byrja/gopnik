@@ -4,6 +4,8 @@
 import logging
 import os
 import re
+import random
+import hashlib
 import asyncio
 from datetime import datetime, timezone
 
@@ -244,7 +246,6 @@ async def handle_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif nickname is None and current_level < 6:
         # Assign a new insult nickname if they don't have one
         nicknames = ["Лох", "Чушок", "Ссыкло", "Тормоз", "Шнырь", "Фуфло", "Балабол", "Штрих"]
-        import random
         db.update_nickname(user.id, chat_id, random.choice(nicknames))
 
     # Check achievements
@@ -493,7 +494,6 @@ async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYP
 
     # Strip own mention from incoming text — LLM shouldn't see "tell me about @kolyan_byrbot"
     # Also strips other @mentions to prevent bot ping-pong loops
-    import re
     text = re.sub(r'@\w+', '', text).strip()
 
     logger.info(f"[GUEST] user={user.id} ({user.first_name}), chat={chat_id}, query_id={guest_query_id}, text='{text[:80]}'")
@@ -560,7 +560,6 @@ async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYP
         except Exception as e:
             logger.warning(f"[GUEST] nickname gen failed: {e}")
             # Fallback nicknames
-            import random
             fallback_nicks = ["Лох", "Чушок", "Ссыкло", "Тормоз", "Шнырь", "Фуфло", "Балабол", "Хмырь"]
             nickname = random.choice(fallback_nicks)
             if chat_id:
@@ -666,13 +665,12 @@ async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYP
         )
         if response_text:
             # Clean up
-            response_text = response_text.strip().strip('"\'').strip()
+            response_text = response_text.strip().strip('"\x27').strip()
             for prefix in ["Вот ответ:", "Наезд:", "Ответ:", "Вот наезд:", "Гопник:"]:
                 if response_text.lower().startswith(prefix.lower()):
                     response_text = response_text[len(prefix):].strip()
 
-            # Strip @mentions — prevents guest-bot ping-pong loops that trigger Telegram flood limits
-            import re
+            # Strip @mentions — prevents guest-bot ping-pong loops
             response_text = re.sub(r'@(\w+)', r'\1', response_text)
             response_text = response_text.strip()
 
@@ -682,8 +680,7 @@ async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYP
     except Exception as e:
         logger.warning(f"[GUEST] LLM error: {e}")
 
-    # === FALLBACK IF LLM FAILED ===
-    import random
+     # === FALLBACK IF LLM FAILED ===
     if not response_text or len(response_text.strip()) < 5:
         # Pre-built fallback responses per level — bigger pool, more variety
         # Include the user's text/context in some variants for personalization
@@ -730,11 +727,11 @@ async def handle_guest_message(update: Update, context: ContextTypes.DEFAULT_TYP
             ],
         }
         pool = fallback_pool.get(level, fallback_pool[1])
-        # Choose based on call_count for more variety — different phrase each time
-        idx = (call_count + hash(text or "") if text else call_count) % len(pool)
+        # Choose based on call_count for more variety — different phrase each time (deterministic)
+        hash_val = int(hashlib.sha256((text or "").encode()).hexdigest(), 16)
+        idx = (call_count + hash_val) % len(pool)
         response_text = pool[idx]
         # Strip @mentions in fallback too — prevents bot ping-pong loops
-        import re
         response_text = re.sub(r'@(\w+)', r'\1', response_text)
 
     # === SEND GUEST RESPONSE ===
