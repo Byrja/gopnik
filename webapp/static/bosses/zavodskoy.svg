@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Заводской — пролетарий, массивный, спецовка -->
+  <rect width="100" height="100" fill="#0e0c09"/>
+  <rect x="0" y="60" width="100" height="40" fill="#1a1410"/>
+  <!-- Шея — толстая -->
+  <rect x="36" y="60" width="28" height="22" fill="#b8844c"/>
+  <!-- Голова — крупная, квадратная -->
+  <ellipse cx="50" cy="42" rx="24" ry="26" fill="#c49060"/>
+  <!-- Каска/кепка -->
+  <path d="M26 30 Q50 18 74 30 L74 40 L26 40 Z" fill="#0a0805"/>
+  <rect x="24" y="28" width="52" height="4" fill="#0a0805"/>
+  <rect x="24" y="28" width="52" height="2" fill="#e8a44a" opacity=".5"/>
+  <!-- Брови — тяжёлые -->
+  <path d="M34 44 L46 42" stroke="#0a0805" stroke-width="4" stroke-linecap="round"/>
+  <path d="M54 42 L66 44" stroke="#0a0805" stroke-width="4" stroke-linecap="round"/>
+  <!-- Глаза — узкие, тяжёлый взгляд -->
+  <line x1="36" y1="50" x2="46" y2="50" stroke="#0a0805" stroke-width="3" stroke-linecap="round"/>
+  <line x1="54" y1="50" x2="64" y2="50" stroke="#0a0805" stroke-width="3" stroke-linecap="round"/>
+  <!-- Нос — большой, красный -->
+  <ellipse cx="50" cy="56" rx="4" ry="5" fill="#a06030"/>
+  <path d="M48 60 L50 64 L52 60" stroke="#7a3a0a" stroke-width="1.5" fill="none"/>
+  <!-- Шрам через бровь -->
+  <line x1="34" y1="42" x2="40" y2="48" stroke="#a04030" stroke-width="2" stroke-linecap="round"/>
+  <!-- Щетина -->
+  <path d="M36 66 L64 66 L64 70 L36 70 Z" fill="#3a2010" opacity=".6"/>
+  <!-- Рот — крепко сжатый -->
+  <line x1="42" y1="68" x2="58" y2="68" stroke="#0a0805" stroke-width="3" stroke-linecap="round"/>
+  <!-- Спецовка — синяя с жёлтой молнией -->
+  <path d="M24 78 L40 76 L60 76 L76 78 L78 100 L22 100 Z" fill="#1a3850"/>
+  <line x1="50" y1="76" x2="50" y2="100" stroke="#e8a44a" stroke-width="2.5"/>
+  <!-- Молния-бегунок -->
+  <rect x="48" y="84" width="4" height="4" fill="#e8a44a"/>
+  <!-- Нашивка -->
+  <rect x="62" y="82" width="10" height="6" fill="#e8a44a" opacity=".7"/>
+</svg>

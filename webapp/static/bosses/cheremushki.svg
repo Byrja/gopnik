@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Черёмушки — старик, седая щетина, шапка-бини, чай в подстаканнике -->
+  <rect width="100" height="100" fill="#0e0c09"/>
+  <rect x="0" y="60" width="100" height="40" fill="#1a1410"/>
+  <!-- Шея -->
+  <rect x="40" y="62" width="20" height="20" fill="#b8844c"/>
+  <!-- Голова — с морщинами -->
+  <ellipse cx="50" cy="44" rx="22" ry="26" fill="#c89868"/>
+  <!-- Шапка-бини -->
+  <path d="M28 32 Q50 16 72 32 L72 42 Q50 36 28 42 Z" fill="#0a0805"/>
+  <rect x="26" y="30" width="48" height="4" fill="#0a0805"/>
+  <rect x="46" y="18" width="8" height="6" fill="#0a0805"/>
+  <!-- Брови — седые -->
+  <path d="M36 46 Q41 44 46 46" stroke="#aaa" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M54 46 Q59 44 64 46" stroke="#aaa" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Глаза — усталые -->
+  <line x1="38" y1="52" x2="44" y2="52" stroke="#0a0805" stroke-width="2"/>
+  <line x1="56" y1="52" x2="62" y2="52" stroke="#0a0805" stroke-width="2"/>
+  <!-- Мешки под глазами -->
+  <path d="M36 54 Q41 56 46 54" stroke="#7a5a30" stroke-width="1" fill="none" opacity=".6"/>
+  <path d="M54 54 Q59 56 64 54" stroke="#7a5a30" stroke-width="1" fill="none" opacity=".6"/>
+  <!-- Нос -->
+  <path d="M48 50 L50 60 L52 50" stroke="#a07a40" stroke-width="2" fill="none"/>
+  <!-- Седые усы -->
+  <path d="M40 62 Q44 60 50 62 Q56 60 60 62" stroke="#aaa" stroke-width="2.5" fill="none"/>
+  <!-- Морщины -->
+  <path d="M34 60 Q36 64 34 68" stroke="#7a5a30" stroke-width="1" fill="none"/>
+  <path d="M66 60 Q64 64 66 68" stroke="#7a5a30" stroke-width="1" fill="none"/>
+  <!-- Рот -->
+  <line x1="44" y1="68" x2="56" y2="68" stroke="#0a0805" stroke-width="2" stroke-linecap="round"/>
+  <!-- Стакан с чаем в руке (на фоне одежды) -->
+  <rect x="68" y="78" width="14" height="18" fill="#7a3a0a" stroke="#e8a44a" stroke-width="1"/>
+  <path d="M68 78 L66 78 L66 80 L68 80" fill="#3a2f24"/>
+  <path d="M82 78 L84 78 L84 80 L82 80" fill="#3a2f24"/>
+  <!-- Пар -->
+  <path d="M72 76 Q73 70 72 66" stroke="#e8a44a" stroke-width="1.5" fill="none" opacity=".5"/>
+  <path d="M78 76 Q79 70 78 66" stroke="#e8a44a" stroke-width="1.5" fill="none" opacity=".4"/>
+  <!-- Одежда — старая олимпийка -->
+  <rect x="30" y="78" width="40" height="14" fill="#0a0805"/>
+  <line x1="36" y1="78" x2="36" y2="92" stroke="#fff" stroke-width="1.5" opacity=".7"/>
+  <line x1="40" y1="78" x2="40" y2="92" stroke="#fff" stroke-width="1.5" opacity=".7"/>
+  <line x1="44" y1="78" x2="44" y2="92" stroke="#fff" stroke-width="1.5" opacity=".7"/>
+</svg>

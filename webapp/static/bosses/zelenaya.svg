@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Зелёная Роща — гроза школы, спортивный, капюшон -->
+  <rect width="100" height="100" fill="#0e0c09"/>
+  <rect x="0" y="60" width="100" height="40" fill="#1a1410"/>
+  <!-- Шея -->
+  <rect x="40" y="62" width="20" height="20" fill="#c49060"/>
+  <!-- Голова -->
+  <ellipse cx="50" cy="46" rx="22" ry="24" fill="#c89868"/>
+  <!-- Капюшон -->
+  <path d="M22 32 Q50 12 78 32 L82 50 L78 58 L22 58 L18 50 Z" fill="#0a0805"/>
+  <!-- Тень капюшона на лице -->
+  <path d="M30 44 L70 44 L70 50 L30 50 Z" fill="#0a0805" opacity=".4"/>
+  <!-- Брови — агрессивные -->
+  <path d="M36 50 L46 46" stroke="#0a0805" stroke-width="3" stroke-linecap="round"/>
+  <path d="M54 46 L64 50" stroke="#0a0805" stroke-width="3" stroke-linecap="round"/>
+  <!-- Глаза — злые -->
+  <line x1="37" y1="56" x2="45" y2="54" stroke="#0a0805" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="55" y1="54" x2="63" y2="56" stroke="#0a0805" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Нос -->
+  <path d="M48 56 L50 64 L52 56" stroke="#a07a40" stroke-width="2" fill="none"/>
+  <!-- Злая ухмылка -->
+  <path d="M42 70 Q50 68 58 70" stroke="#0a0805" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Худи с капюшоном -->
+  <path d="M22 78 L40 76 L60 76 L78 78 L78 100 L22 100 Z" fill="#0a0805"/>
+  <!-- Шнурки -->
+  <line x1="46" y1="80" x2="46" y2="92" stroke="#fff" stroke-width="1.5"/>
+  <line x1="54" y1="80" x2="54" y2="92" stroke="#fff" stroke-width="1.5"/>
+  <!-- Карман-кенгуру -->
+  <path d="M34 86 L66 86 L62 96 L38 96 Z" fill="#1a1410"/>
+  <!-- Золотой акцент — кольцо -->
+  <circle cx="76" cy="84" r="2" fill="#e8a44a"/>
+</svg>

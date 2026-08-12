@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Мутка: рукопожатие под столом -->
+  <path d="M10 70 L90 70" stroke="#1a1612" stroke-width="6"/>
+  <path d="M10 70 L90 70" stroke="#e8a44a" stroke-width="1.5" opacity=".5"/>
+  <!-- Левая рука -->
+  <path d="M5 78 L20 78 L30 68 L42 64 L48 70 L42 76 L30 80 L20 82 L5 82 Z" fill="#1a1612"/>
+  <!-- Правая рука -->
+  <path d="M95 78 L80 78 L70 68 L58 64 L52 70 L58 76 L70 80 L80 82 L95 82 Z" fill="#1a1612"/>
+  <!-- Переплетение пальцев (золотые) -->
+  <line x1="46" y1="64" x2="54" y2="64" stroke="#e8a44a" stroke-width="3"/>
+  <line x1="46" y1="68" x2="54" y2="68" stroke="#e8a44a" stroke-width="3"/>
+  <line x1="46" y1="72" x2="54" y2="72" stroke="#e8a44a" stroke-width="3"/>
+  <line x1="46" y1="76" x2="54" y2="76" stroke="#e8a44a" stroke-width="3"/>
+  <!-- Тень (под столом) -->
+  <ellipse cx="50" cy="92" rx="40" ry="4" fill="#000" opacity=".3"/>
+  <!-- Вопросительный знак / знак денег над -->
+  <text x="50" y="38" font-size="36" font-weight="900" fill="#e8a44a" text-anchor="middle" font-family="Arial">₽</text>
+</svg>

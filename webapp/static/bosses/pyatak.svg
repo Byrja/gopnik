@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Пятак — барыга, усы, кепка, цепь -->
+  <rect width="100" height="100" fill="#0e0c09"/>
+  <rect x="0" y="60" width="100" height="40" fill="#1a1410"/>
+  <!-- Шея -->
+  <rect x="40" y="62" width="20" height="20" fill="#c49060"/>
+  <!-- Голова — круглее -->
+  <ellipse cx="50" cy="46" rx="24" ry="24" fill="#d4a070"/>
+  <!-- Кепка -->
+  <path d="M26 30 Q50 20 74 30 L74 36 L26 36 Z" fill="#0a0805"/>
+  <rect x="20" y="34" width="60" height="6" fill="#0a0805"/>
+  <!-- Брови — хитрые -->
+  <path d="M36 46 L46 44" stroke="#0a0805" stroke-width="3" stroke-linecap="round"/>
+  <path d="M54 44 L64 46" stroke="#0a0805" stroke-width="3" stroke-linecap="round"/>
+  <!-- Глаза — прищуренные с хитрецой -->
+  <path d="M36 52 Q41 54 46 52" stroke="#0a0805" stroke-width="2" fill="none"/>
+  <path d="M54 52 Q59 54 64 52" stroke="#0a0805" stroke-width="2" fill="none"/>
+  <!-- Усы — пышные -->
+  <path d="M40 60 Q44 58 50 60 Q56 58 60 60 L60 64 L40 64 Z" fill="#3a2010"/>
+  <ellipse cx="38" cy="62" rx="4" ry="3" fill="#3a2010"/>
+  <ellipse cx="62" cy="62" rx="4" ry="3" fill="#3a2010"/>
+  <!-- Нос -->
+  <ellipse cx="50" cy="56" rx="3" ry="4" fill="#b8844c"/>
+  <!-- Рот — ухмылка -->
+  <path d="M44 70 Q50 74 56 70" stroke="#0a0805" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Золотая цепь на шее -->
+  <path d="M35 70 Q50 80 65 70" stroke="#e8a44a" stroke-width="2.5" fill="none"/>
+  <circle cx="50" cy="80" r="3" fill="#e8a44a"/>
+  <text x="50" y="83" font-size="6" font-weight="900" fill="#0a0805" text-anchor="middle">$</text>
+  <!-- Одежда — жилет -->
+  <path d="M28 78 L36 78 L36 100 L28 100 Z" fill="#3a2f24"/>
+  <path d="M64 78 L72 78 L72 100 L64 100 Z" fill="#3a2f24"/>
+  <path d="M36 80 L64 80 L62 100 L38 100 Z" fill="#1a1410"/>
+</svg>

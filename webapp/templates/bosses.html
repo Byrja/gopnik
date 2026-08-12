@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Боссы районов — Пацанский Ход{% endblock %}
+{% block content %}
+<div class="app">
+    <header class="hero hero--dvor">
+        <h1 class="drip-title">🥊 БОССЫ</h1>
+        <p class="sub">Каждый район — свой хозяин. Убей или сдохни</p>
+    </header>
+
+    <section class="boss-list" id="boss-list">
+        <div class="loader">Тащим боссов...</div>
+    </section>
+
+    <!-- Boss detail modal -->
+    <div id="boss-modal" class="modal hidden" onclick="if(event.target===this) closeBossModal()">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeBossModal()">✕</button>
+            <div id="boss-modal-body">...</div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <nav class="bottom-nav">
+        <a href="/" class="nav-item">🏠<br><span>Двор</span></a>
+        <a href="/quests" class="nav-item">📜<br><span>Задания</span></a>
+        <a href="/bosses" class="nav-item active">🥊<br><span>Боссы</span></a>
+        <a href="/clan" class="nav-item">👥<br><span>Братва</span></a>
+    </nav>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+loadBosses();
+
+async function loadBosses() {
+    const list = document.getElementById('boss-list');
+    try {
+        const data = await api('/api/bosses');
+        if (!data.bosses || !data.bosses.length) {
+            list.innerHTML = '<div class="empty">Пока никого нет.</div>';
+            return;
+        }
+        list.innerHTML = data.bosses.map(b => bossCard(b)).join('');
+    } catch (e) {
+        list.innerHTML = `<div class="empty">Ошибка: ${escapeHtml(e.message)}</div>`;
+    }
+}
+
+function bossCard(b) {
+    const myPct = Math.min(100, (b.br / 100) * 100);
+    return `
+    <div class="boss-card ${b.can_attempt ? '' : 'boss-card--disabled'}" onclick="openBossModal('${b.code}')">
+        <div class="boss-avatar-wrap">
+            <img class="boss-avatar" src="${b.avatar}" alt="${escapeHtml(b.name)}" onerror="this.src='/static/gopnik.png'">
+            ${b.player_kills > 0 ? `<div class="boss-kills">🏆 ${b.player_kills}</div>` : ''}
+        </div>
+        <div class="boss-info">
+            <div class="boss-title">${escapeHtml(b.title)}</div>
+            <div class="boss-name">${escapeHtml(b.name)}</div>
+            <div class="boss-stats">
+                <span class="boss-stat">💪 ${b.strength}</span>
+                <span class="boss-stat">🗣 ${b.bazar}</span>
+                <span class="boss-stat">🛡 ${b.stamina}</span>
+                <span class="boss-stat br">⚔ ${b.br}</span>
+            </div>
+            <div class="boss-bar">
+                <div class="boss-bar-fill" style="width: ${myPct}%"></div>
+            </div>
+            <div class="boss-footer">
+                <span class="boss-attempts">⚡ ${b.attempts_left}/3</span>
+                ${b.can_attempt
+                    ? '<span class="boss-go">ДРАТЬСЯ →</span>'
+                    : `<span class="boss-cd">⏱ ${b.cooldown_minutes}м</span>`}
+            </div>
+        </div>
+    </div>`;
+}
+
+async function openBossModal(bossCode) {
+    const modal = document.getElementById('boss-modal');
+    const body = document.getElementById('boss-modal-body');
+    modal.classList.remove('hidden');
+    body.innerHTML = '<div class="loader">Грузим босса...</div>';
+    try {
+        const b = await api(`/api/bosses/${bossCode}`);
+        body.innerHTML = renderBossModal(b);
+    } catch (e) {
+        body.innerHTML = `<div class="empty">Ошибка: ${escapeHtml(e.message)}</div>`;
+    }
+}
+
+function closeBossModal() {
+    document.getElementById('boss-modal').classList.add('hidden');
+}
+
+function renderBossModal(b) {
+    return `
+    <div class="boss-modal-head">
+        <img class="boss-avatar-big" src="${b.avatar}" alt="" onerror="this.src='/static/gopnik.png'">
+        <div>
+            <div class="boss-modal-title">${escapeHtml(b.title)}</div>
+            <div class="boss-modal-name">${escapeHtml(b.name)}</div>
+        </div>
+    </div>
+    <div class="boss-modal-flavor">${escapeHtml(b.flavor)}</div>
+    <div class="boss-modal-stats">
+        <div class="bms"><span>💪 Сила</span><b>${b.strength}</b></div>
+        <div class="bms"><span>🛡 Выносл.</span><b>${b.stamina}</b></div>
+        <div class="bms"><span>🗣 Базар</span><b>${b.bazar}</b></div>
+        <div class="bms"><span>❤ HP</span><b>${b.boss_hp}</b></div>
+        <div class="bms"><span>⚔ BR</span><b>${b.br}</b></div>
+    </div>
+    <div class="boss-modal-reward">
+        <div>💰 +${b.money_reward}₽</div>
+        <div>⭐ +${b.xp_reward} XP</div>
+        <div>🌻 +${b.semki_reward} семок</div>
+    </div>
+    <button class="boss-fight-btn ${b.can_attempt ? '' : 'disabled'}" id="fight-btn"
+            ${b.can_attempt ? '' : 'disabled'} onclick="startBossFight('${b.code}', this)">
+        ${b.can_attempt ? `⚔️ ДРАТЬСЯ (-${b.attempts_left}⚡ · 20⚡)` : `⏱ Подожди ${b.cooldown_minutes}м`}
+    </button>
+    <div id="fight-result"></div>`;
+}
+
+async function startBossFight(bossCode, btn) {
+    if (btn.disabled) return;
+    const result = document.getElementById('fight-result');
+    btn.disabled = true;
+    btn.textContent = '⚔️ Дерусь...';
+    result.innerHTML = '';
+    try {
+        const r = await api('/api/boss/fight', {
+            method: 'POST',
+            body: JSON.stringify({ boss_code: bossCode }),
+        });
+        if (!r.ok) {
+            showToast(r.message || 'Ошибка', 'error');
+            btn.disabled = false;
+            btn.textContent = '⚔️ ДРАТЬСЯ';
+            return;
+        }
+        // Показать лог
+        const logHtml = (r.log || []).map(t => `
+            <div class="fight-line ${t.attacker === r.boss_name ? 'fight-boss' : 'fight-you'}">
+                <b>${escapeHtml(t.attacker)}</b> → ${escapeHtml(t.defender)} <span class="dmg">-${t.damage} HP</span>
+                <div class="flavor">${escapeHtml(t.flavor)}</div>
+            </div>
+        `).join('');
+        result.innerHTML = `
+            <div class="fight-result ${r.is_winner ? 'fight-win' : 'fight-lose'}">
+                <div class="fight-result-msg">${escapeHtml(r.message)}</div>
+                <div class="fight-log">${logHtml}</div>
+            </div>`;
+        haptic(r.is_winner ? 'heavy' : 'rigid');
+        // Reload список
+        setTimeout(() => { loadBosses(); }, 800);
+        if (r.is_winner) {
+            showAchievementPopup && showAchievementPopup('first_gop');
+        }
+    } catch (e) {
+        result.innerHTML = `<div class="fight-result fight-lose">Ошибка: ${escapeHtml(e.message)}</div>`;
+    } finally {
+        btn.textContent = '⚔️ ДРАТЬСЯ СНОВА';
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

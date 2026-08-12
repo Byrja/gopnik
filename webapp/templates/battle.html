@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Бой — Пацанский Ход{% endblock %}
+{% block content %}
+<div class="app">
+    <header class="hero">
+        <h1 class="drip-title">🥊 БОЙ</h1>
+        <p class="sub" id="battle-sub">...</p>
+    </header>
+
+    <section id="battle-versions" class="battle-versions">
+        <div class="loader">Достаём бой...</div>
+    </section>
+
+    <section id="battle-detail" class="battle-detail hidden">
+        <div class="battle-vs">
+            <div class="vs-player">
+                <img id="attacker-avatar" class="avatar" src="/static/avatar_default.png" alt="">
+                <div class="vs-name" id="attacker-name"></div>
+                <div class="vs-status" id="attacker-status"></div>
+            </div>
+            <div class="vs-vs">VS</div>
+            <div class="vs-player">
+                <img id="defender-avatar" class="avatar" src="/static/avatar_default.png" alt="">
+                <div class="vs-name" id="defender-name"></div>
+                <div class="vs-status" id="defender-status"></div>
+            </div>
+        </div>
+
+        <div id="battle-result-banner" class="battle-result-banner"></div>
+
+        <h2 class="section-title drip-title-sm">📜 Лог боя</h2>
+        <div id="battle-log" class="battle-log"></div>
+
+        <div class="battle-meta">
+            <div>📅 <span id="battle-date"></span></div>
+            <div>⭐ Рейтинг: <span id="battle-rating-delta"></span></div>
+            <div>💰 Награда: <span id="battle-money-reward"></span></div>
+        </div>
+
+        <div class="battle-actions">
+            <a href="/profile" class="battle-btn">👤 В профиль</a>
+            <a href="/" class="battle-btn">🏠 На двор</a>
+        </div>
+    </section>
+
+    <div id="toast" class="toast hidden"></div>
+
+    {% include "partials/nav.html" %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    loadBattle();
+</script>
+{% endblock %}

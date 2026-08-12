@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Базар: три головы в кепках -->
+  <g fill="#1a1612">
+    <!-- Левая -->
+    <ellipse cx="26" cy="56" rx="10" ry="11"/>
+    <path d="M14 50 Q26 38 38 50 L38 54 L14 54 Z"/>
+    <ellipse cx="26" cy="46" rx="11" ry="5" fill="#e8a44a"/>
+    <!-- Центр -->
+    <ellipse cx="50" cy="42" rx="11" ry="12"/>
+    <path d="M36 36 Q50 22 64 36 L64 40 L36 40 Z"/>
+    <ellipse cx="50" cy="32" rx="12" ry="5" fill="#e8a44a"/>
+    <!-- Правая -->
+    <ellipse cx="74" cy="56" rx="10" ry="11"/>
+    <path d="M62 50 Q74 38 86 50 L86 54 L62 54 Z"/>
+    <ellipse cx="74" cy="46" rx="11" ry="5" fill="#e8a44a"/>
+  </g>
+  <!-- Облако речи -->
+  <path d="M60 70 Q72 68 80 76 Q72 80 64 78 L62 84 Z" fill="#e8a44a" stroke="#1a1612" stroke-width="2"/>
+  <text x="63" y="78" font-size="9" font-weight="900" fill="#1a1612" font-family="Arial">!?</text>
+</svg>

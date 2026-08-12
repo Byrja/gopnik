@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Задания — Пацанский Ход{% endblock %}
+{% block content %}
+<div class="app">
+    <header class="hero">
+        <h1 class="drip-title">📜 ЗАДАНИЯ</h1>
+        <p class="sub">Шруп нашёл тебе работёнку</p>
+    </header>
+
+    <section class="quest-tabs">
+        <button class="tab-btn active" data-tab="active">⚡ Активные</button>
+        <button class="tab-btn" data-tab="completed">✅ Сделано</button>
+    </section>
+
+    <section id="active-list" class="quest-list">
+        <div class="loader">Тащим задания...</div>
+    </section>
+
+    <section id="completed-list" class="quest-list hidden">
+        <div class="loader">Тащим задания...</div>
+    </section>
+
+    <section class="locked-section">
+        <h2 class="locked-title">🔒 Скоро будет</h2>
+        <div id="locked-list" class="quest-list quest-list--locked">
+            <div class="loader">Грузим будущие задания...</div>
+        </div>
+    </section>
+
+    <div id="toast" class="toast hidden"></div>
+
+    {% include "partials/nav.html" %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    loadQuests();
+    bindQuestTabs();
+    loadLockedQuests();
+</script>
+{% endblock %}

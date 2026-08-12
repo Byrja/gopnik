@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Чай: гранёный стакан с чаем для тайла "Чай" -->
+  <path d="M30 26 L70 26 L66 86 L34 86 Z" fill="#3a2a1a" stroke="#e8a44a" stroke-width="1.5"/>
+  <path d="M32 36 L68 36 L66 84 L34 84 Z" fill="#7a3a0a"/>
+  <line x1="34" y1="30" x2="66" y2="30" stroke="#e8a44a" stroke-width="2"/>
+  <path d="M40 22 Q42 14 40 8" stroke="#e8a44a" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".6"/>
+  <path d="M50 22 Q52 14 50 8" stroke="#e8a44a" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".5"/>
+  <path d="M60 22 Q62 14 60 8" stroke="#e8a44a" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".6"/>
+</svg>

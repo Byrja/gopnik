@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Чайная: гранёный стакан в подстаканнике -->
+  <!-- Подстаканник -->
+  <path d="M28 35 L72 35 L70 80 L30 80 Z" fill="#1a1612" stroke="#e8a44a" stroke-width="2"/>
+  <rect x="26" y="32" width="48" height="6" fill="#1a1612" stroke="#e8a44a" stroke-width="2"/>
+  <!-- Ручка подстаканника -->
+  <path d="M70 45 Q86 50 86 60 Q86 70 70 70" stroke="#1a1612" stroke-width="5" fill="none"/>
+  <path d="M70 45 Q84 50 84 60 Q84 68 70 68" stroke="#e8a44a" stroke-width="2" fill="none"/>
+  <!-- Гранёный стакан -->
+  <path d="M36 40 L64 40 L62 75 L38 75 Z" fill="#3a2a1a" stroke="#e8a44a" stroke-width="1.5"/>
+  <!-- Чай -->
+  <path d="M38 48 L62 48 L60 73 L40 73 Z" fill="#7a3a0a"/>
+  <!-- Пар -->
+  <path d="M44 36 Q46 28 44 22 Q42 16 46 10" stroke="#e8a44a" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".7"/>
+  <path d="M54 36 Q56 28 54 22 Q52 16 56 10" stroke="#e8a44a" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".5"/>
+  <!-- Семечки рядом -->
+  <ellipse cx="14" cy="84" rx="4" ry="2.5" fill="#e8a44a"/>
+  <ellipse cx="22" cy="86" rx="4" ry="2.5" fill="#e8a44a"/>
+  <ellipse cx="30" cy="84" rx="4" ry="2.5" fill="#e8a44a"/>
+</svg>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Тренировка: кулак в бинтах -->
+  <g>
+    <!-- Запястье (рукав) -->
+    <path d="M30 90 L70 90 L66 75 L34 75 Z" fill="#1a1612"/>
+    <rect x="34" y="78" width="32" height="3" fill="#e8a44a"/>
+    <rect x="34" y="83" width="32" height="3" fill="#e8a44a"/>
+    <!-- Кулак -->
+    <path d="M22 75 Q20 55 30 45 Q40 38 55 38 Q72 38 78 50 Q82 65 76 75 Z" fill="#1a1612"/>
+    <!-- Бинты - полоски -->
+    <path d="M22 65 Q50 62 78 65" stroke="#e8a44a" stroke-width="3" fill="none"/>
+    <path d="M22 70 Q50 67 78 70" stroke="#e8a44a" stroke-width="3" fill="none"/>
+    <!-- Костяшки -->
+    <circle cx="32" cy="50" r="3" fill="#e8a44a"/>
+    <circle cx="42" cy="46" r="3" fill="#e8a44a"/>
+    <circle cx="52" cy="44" r="3" fill="#e8a44a"/>
+    <circle cx="62" cy="46" r="3" fill="#e8a44a"/>
+    <circle cx="72" cy="50" r="3" fill="#e8a44a"/>
+  </g>
+</svg>

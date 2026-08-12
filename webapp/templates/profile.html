@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Профиль — Пацанский Ход{% endblock %}
+{% block content %}
+<div class="app">
+    <header class="hero">
+        <h1 class="drip-title">👤 ПРОФИЛЬ</h1>
+        <p class="sub">Твои статы и район</p>
+    </header>
+
+    <section id="profile" class="profile">
+        <div class="loader">Грузим профиль...</div>
+    </section>
+
+    <section class="district-section">
+        <h2 class="section-title drip-title-sm">📍 Район</h2>
+        <div id="district-list" class="district-list">
+            <div class="loader">Грузим районы...</div>
+        </div>
+    </section>
+
+    <section class="actions">
+        <h2 class="section-title drip-title-sm">⚙️ Дела</h2>
+        <div class="action-grid">
+            <button class="action-tile" data-action="work">
+                <img class="action-tile-img" src="/static/icons/rabota.svg" onerror="this.style.display='none'">
+                <div class="action-tile-name">РАБОТА</div>
+                <div class="action-tile-cost">10⚡ · 80-120₽</div>
+            </button>
+            <button class="action-tile" data-action="turnik">
+                <img class="action-tile-img" src="/static/icons/turnik.svg" onerror="this.style.display='none'">
+                <div class="action-tile-name">ТУРНИК</div>
+                <div class="action-tile-cost">8⚡ · +1 сила</div>
+            </button>
+            <button class="action-tile" data-action="bazar">
+                <img class="action-tile-img" src="/static/icons/bazar.svg" onerror="this.style.display='none'">
+                <div class="action-tile-name">БАЗАР</div>
+                <div class="action-tile-cost">6⚡ · +1 базар</div>
+            </button>
+            <button class="action-tile" data-action="mutka">
+                <img class="action-tile-img" src="/static/icons/mutka.svg" onerror="this.style.display='none'">
+                <div class="action-tile-name">МУТКА</div>
+                <div class="action-tile-cost">12⚡ · 50-200₽</div>
+            </button>
+        </div>
+    </section>
+
+    <div id="toast" class="toast hidden"></div>
+
+    {% include "partials/nav.html" %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    loadProfile();
+    bindActions();
+    bindNychkaCountdown();
+</script>
+{% endblock %}

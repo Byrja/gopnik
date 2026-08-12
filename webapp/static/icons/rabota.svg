@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Работа: рабочий с мешком -->
+  <!-- Мешок через плечо -->
+  <ellipse cx="35" cy="40" rx="20" ry="18" fill="#1a1612" stroke="#e8a44a" stroke-width="2"/>
+  <path d="M20 38 Q35 28 50 38" stroke="#e8a44a" stroke-width="1.5" fill="none"/>
+  <!-- Горловина -->
+  <rect x="28" y="22" width="14" height="8" fill="#1a1612"/>
+  <line x1="32" y1="22" x2="32" y2="14" stroke="#1a1612" stroke-width="3"/>
+  <!-- Силуэт человека -->
+  <circle cx="70" cy="34" r="8" fill="#1a1612"/>
+  <ellipse cx="70" cy="30" rx="9" ry="4" fill="#e8a44a"/>
+  <path d="M58 44 Q70 40 82 44 L80 60 L60 60 Z" fill="#1a1612"/>
+  <line x1="62" y1="50" x2="40" y2="48" stroke="#1a1612" stroke-width="4"/>
+  <line x1="60" y1="60" x2="55" y2="88" stroke="#1a1612" stroke-width="6" stroke-linecap="round"/>
+  <line x1="78" y1="60" x2="82" y2="88" stroke="#1a1612" stroke-width="6" stroke-linecap="round"/>
+  <!-- Спина изогнута -->
+  <path d="M60 60 Q70 70 80 60" stroke="#1a1612" stroke-width="2" fill="none"/>
+</svg>

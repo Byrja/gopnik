@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Движение: поднятый кулак в олимпийке -->
+  <!-- Олимпийка (рукав) -->
+  <path d="M20 90 L80 90 L78 60 L22 60 Z" fill="#1a1612"/>
+  <rect x="22" y="68" width="56" height="3" fill="#fff"/>
+  <rect x="22" y="78" width="56" height="3" fill="#fff"/>
+  <rect x="22" y="86" width="56" height="2" fill="#fff"/>
+  <!-- Кулак поднятый -->
+  <g>
+    <path d="M28 60 Q26 40 36 30 Q46 22 60 22 Q76 22 82 35 Q86 50 80 60 Z" fill="#1a1612"/>
+    <!-- Костяшки -->
+    <circle cx="36" cy="34" r="3.5" fill="#e8a44a"/>
+    <circle cx="46" cy="29" r="3.5" fill="#e8a44a"/>
+    <circle cx="56" cy="27" r="3.5" fill="#e8a44a"/>
+    <circle cx="66" cy="29" r="3.5" fill="#e8a44a"/>
+    <circle cx="74" cy="34" r="3.5" fill="#e8a44a"/>
+    <!-- Сияние вокруг -->
+    <path d="M14 30 L24 30 M10 38 L20 38 M14 46 L24 46" stroke="#e8a44a" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+    <path d="M76 50 L86 50 M80 58 L90 58" stroke="#e8a44a" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+  </g>
+</svg>

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Братва — Пацанский Ход{% endblock %}
+{% block content %}
+<div class="app">
+    <header class="hero">
+        <h1 class="drip-title">👥 БРАТВА</h1>
+        <p class="sub">Свои — это сила</p>
+    </header>
+
+    <section id="clan-root" class="clan-root">
+        <div class="loader">Тащим братву...</div>
+    </section>
+
+    <section class="clan-leaderboard-section">
+        <h2 class="section-title drip-title-sm">🏆 Топ братв</h2>
+        <div id="clan-leaderboard" class="clan-leaderboard">
+            <div class="loader">Загружаем...</div>
+        </div>
+    </section>
+
+    <div id="toast" class="toast hidden"></div>
+
+    {% include "partials/nav.html" %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    loadClan();
+</script>
+{% endblock %}

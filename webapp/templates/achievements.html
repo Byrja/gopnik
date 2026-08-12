@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Ачивки — Пацанский Ход{% endblock %}
+{% block content %}
+<div class="app">
+    <header class="hero">
+        <h1 class="drip-title">🏆 АЧИВКИ</h1>
+        <p class="sub">Каждая открытая — это история</p>
+    </header>
+
+    <section id="achievements-list" class="achievements-list">
+        <div class="loader">Тащим ачивки...</div>
+    </section>
+
+    <div id="toast" class="toast hidden"></div>
+
+    {% include "partials/nav.html" %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    loadAchievements();
+</script>
+{% endblock %}
