@@ -92,9 +92,11 @@ def page_profile():
     return HTMLResponse(_load_template("profile.html", nav="profile"))
 
 
-@router.get("/actions", response_class=HTMLResponse)
+@router.get("/actions")
 def page_actions():
-    return HTMLResponse(_load_template("actions.html", nav="dvor"))
+    """Deprecated: вся функциональность теперь на / (Двор). Редиректим."""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/", status_code=301)
 
 
 @router.get("/quests", response_class=HTMLResponse)

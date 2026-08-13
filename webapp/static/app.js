@@ -379,13 +379,17 @@ function updateDvorHeader(p) {
     }
     // Движение — отключаем если мало энергии
     const dv = document.getElementById('btn-dvizhenie');
+    const dvFoot = document.getElementById('btn-dvizhenie-foot');
     if (dv) {
-        if ((p.energy || 0) < 15) {
-            dv.style.opacity = '0.5';
+        const energy = p.energy || 0;
+        if (energy < 15) {
             dv.disabled = true;
+            dv.classList.add('is-locked');
+            if (dvFoot) dvFoot.textContent = `Нужно 15⚡ · у тебя ${energy}⚡`;
         } else {
-            dv.style.opacity = '';
             dv.disabled = false;
+            dv.classList.remove('is-locked');
+            if (dvFoot) dvFoot.textContent = '15⚡ · вызов на бой';
         }
     }
 }

@@ -18,31 +18,11 @@
         </div>
     </section>
 
-    <section class="actions">
-        <h2 class="section-title drip-title-sm">⚙️ Дела</h2>
-        <div class="action-grid">
-            <button class="action-tile" data-action="work">
-                <img class="action-tile-img" src="/static/icons/rabota.svg" onerror="this.style.display='none'">
-                <div class="action-tile-name">РАБОТА</div>
-                <div class="action-tile-cost">10⚡ · 80-120₽</div>
-            </button>
-            <button class="action-tile" data-action="turnik">
-                <img class="action-tile-img" src="/static/icons/turnik.svg" onerror="this.style.display='none'">
-                <div class="action-tile-name">ТУРНИК</div>
-                <div class="action-tile-cost">8⚡ · +1 сила</div>
-            </button>
-            <button class="action-tile" data-action="bazar">
-                <img class="action-tile-img" src="/static/icons/bazar.svg" onerror="this.style.display='none'">
-                <div class="action-tile-name">БАЗАР</div>
-                <div class="action-tile-cost">6⚡ · +1 базар</div>
-            </button>
-            <button class="action-tile" data-action="mutka">
-                <img class="action-tile-img" src="/static/icons/mutka.svg" onerror="this.style.display='none'">
-                <div class="action-tile-name">МУТКА</div>
-                <div class="action-tile-cost">12⚡ · 50-200₽</div>
-            </button>
-        </div>
-    </section>
+    <div class="profile-back">
+        <a href="/" class="big-cta profile-back-btn">
+            <span class="big-cta-text">← На Двор</span>
+        </a>
+    </div>
 
     <div id="toast" class="toast hidden"></div>
 
@@ -52,7 +32,5 @@
 {% block scripts %}
 <script>
     loadProfile();
-    bindActions();
-    bindNychkaCountdown();
 </script>
 {% endblock %}

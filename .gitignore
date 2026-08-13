@@ -5,3 +5,6 @@ __pycache__/
 *.db
 venv/
 .venv/
+*.bak
+*.bak*
+.DS_Store
