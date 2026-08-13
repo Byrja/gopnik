@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+    <!-- Облако с речью (БАЗАР) -->
+    <!-- Хвостик облака -->
+    <path d="M30 75 L25 88 L42 78 Z" fill="#1a1612" stroke="#e8a44a" stroke-width="2"/>
+    <!-- Облако -->
+    <path d="M25 30 Q15 35 18 48 Q8 52 12 65 Q15 75 28 75 L78 75 Q90 75 92 60 Q94 45 80 42 Q80 28 65 30 Q60 18 45 22 Q35 18 30 25 Q22 25 25 30 Z"
+          fill="#1a1612" stroke="#e8a44a" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Текст-точки (речь) -->
+    <circle cx="40" cy="55" r="3" fill="#e8a44a"/>
+    <circle cx="55" cy="55" r="3" fill="#e8a44a"/>
+    <circle cx="70" cy="55" r="3" fill="#e8a44a"/>
+    <!-- Блик -->
+    <ellipse cx="35" cy="38" rx="5" ry="2" fill="#e8a44a" opacity="0.4"/>
+</svg>

@@ -39,10 +39,10 @@
     </header>
 
     <section class="stats-row">
-        <div class="stat-cell"><div class="stat-ico">💪</div><div class="stat-val" id="stat-strength">0</div><div class="stat-lbl">СИЛА</div></div>
-        <div class="stat-cell"><div class="stat-ico">🛡</div><div class="stat-val" id="stat-authority">0</div><div class="stat-lbl">АВТОРИТЕТ</div></div>
-        <div class="stat-cell"><div class="stat-ico">❤</div><div class="stat-val" id="stat-stamina">0</div><div class="stat-lbl">ВЫНОСЛ</div></div>
-        <div class="stat-cell"><div class="stat-ico">🗣</div><div class="stat-val" id="stat-bazar">0</div><div class="stat-lbl">БАЗАР</div></div>
+        <div class="stat-cell"><img class="stat-ico" src="/static/icons/stat-strength.svg" alt=""><div class="stat-val" id="stat-strength">0</div><div class="stat-lbl">СИЛА</div></div>
+        <div class="stat-cell"><img class="stat-ico" src="/static/icons/stat-authority.svg" alt=""><div class="stat-val" id="stat-authority">0</div><div class="stat-lbl">АВТОРИТЕТ</div></div>
+        <div class="stat-cell"><img class="stat-ico" src="/static/icons/stat-stamina.svg" alt=""><div class="stat-val" id="stat-stamina">0</div><div class="stat-lbl">ВЫНОСЛ</div></div>
+        <div class="stat-cell"><img class="stat-ico" src="/static/icons/stat-bazar.svg" alt=""><div class="stat-val" id="stat-bazar">0</div><div class="stat-lbl">БАЗАР</div></div>
     </section>
 
     <section class="actions">
@@ -71,10 +71,10 @@
         </div>
     </section>
 
-    <button class="big-cta" id="btn-dvizhenie">
+    <button class="big-cta is-locked" id="btn-dvizhenie" disabled>
         <span class="big-cta-eyebrow">⚔️ PvP-бой</span>
         <span class="big-cta-text">ДВИЖЕНИЕ</span>
-        <span class="big-cta-foot">15⚡ · вызов на бой</span>
+        <span class="big-cta-foot" id="btn-dvizhenie-foot">15⚡ · вызов на бой</span>
     </button>
 
     <section class="secondary-actions">
@@ -94,7 +94,7 @@
             <div class="action-tile-cost" id="nychka-cost">раз в 6ч</div>
         </button>
         <a class="action-tile action-tile--small" href="/bosses" style="text-decoration:none;">
-            <img class="action-tile-img" src="/static/icons/dvizhenie.svg">
+            <img class="action-tile-img" src="/static/icons/nav-bosses.svg">
             <div class="action-tile-name">БОССЫ</div>
             <div class="action-tile-cost">PvE · каждый район</div>
         </a>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+    <!-- Сердце (ВЫНОСЛ) -->
+    <path d="M50 88 L18 56 Q10 48 10 36 Q10 22 22 18 Q34 14 50 30 Q66 14 78 18 Q90 22 90 36 Q90 48 82 56 Z"
+          fill="#1a1612" stroke="#e8a44a" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Внутренний пульс -->
+    <path d="M22 48 L34 48 L40 38 L46 58 L52 42 L58 48 L78 48"
+          stroke="#e8a44a" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Блик -->
+    <ellipse cx="32" cy="30" rx="6" ry="3" fill="#e8a44a" opacity="0.3"/>
+</svg>

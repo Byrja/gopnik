@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+    <!-- Щит авторитета -->
+    <path d="M50 8 L85 22 L82 55 Q80 75 50 92 Q20 75 18 55 L15 22 Z"
+          fill="#1a1612" stroke="#e8a44a" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Внутренний щит -->
+    <path d="M50 18 L75 28 L73 53 Q72 70 50 82 Q28 70 27 53 L25 28 Z"
+          fill="none" stroke="#e8a44a" stroke-width="1.5" opacity="0.5"/>
+    <!-- Корона в центре -->
+    <path d="M35 45 L40 35 L50 42 L60 35 L65 45 L65 60 L35 60 Z"
+          fill="#e8a44a" stroke="#f5c475" stroke-width="1"/>
+    <line x1="50" y1="42" x2="50" y2="60" stroke="#0a0805" stroke-width="1"/>
+    <!-- Звёзды-блики -->
+    <circle cx="50" cy="20" r="1.5" fill="#f5c475"/>
+    <circle cx="50" cy="25" r="1" fill="#f5c475"/>
+</svg>
