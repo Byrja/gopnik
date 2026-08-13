@@ -234,11 +234,13 @@ function renderMe(p) {
 // ---------------------------------------------------------------------------
 async function loadRating() {
     const list = document.getElementById('rating-list');
+    if (!list) return;
+    showSkeleton(list, 5);
     try {
         const data = await api('/api/rating?limit=50');
         const entries = data.entries || [];
         if (entries.length === 0) {
-            list.innerHTML = '<div class="empty">Тут пока никого. Будь первым — загляни в ⚡ Дела.</div>';
+            showEmptyState(list, 'Тут пока никого.', 'Будь первым — загляни в ⚡ Дела.', '🥇');
             return;
         }
         list.innerHTML = entries.map((e, i) => {
@@ -260,7 +262,7 @@ async function loadRating() {
             `;
         }).join('');
     } catch (e) {
-        list.innerHTML = '<div class="empty">Не удалось загрузить рейтинг. Открой из Telegram.</div>';
+        showErrorState(list, 'Не удалось загрузить рейтинг.', 'Шрупу не удаётся дозвониться до братвы.', loadRating, '📡');
         console.error('loadRating:', e);
     }
 }
@@ -273,13 +275,14 @@ let myProfile = null;
 async function loadProfile() {
     const root = document.getElementById('profile');
     if (!root) return;
+    showSkeleton(root, 3);
     try {
         const p = await api('/api/me');
         myProfile = p;
         renderProfile(p);
         loadDistricts();
     } catch (e) {
-        root.innerHTML = '<div class="empty">Не удалось загрузить профиль. Открой из Telegram.</div>';
+        showErrorState(root, 'Не удалось загрузить профиль.', 'Проверь интернет или зайди через Telegram.', loadProfile, '👤');
         console.error('loadProfile:', e);
     }
 }
@@ -287,9 +290,14 @@ async function loadProfile() {
 async function loadDistricts() {
     const root = document.getElementById('district-list');
     if (!root) return;
+    showSkeleton(root, 4);
     try {
         const data = await api('/api/districts');
         const list = data.districts || [];
+        if (list.length === 0) {
+            showEmptyState(root, 'Районов пока нет.', 'Скоро добавятся.', '🗺');
+            return;
+        }
         const current = myProfile ? myProfile.district_code : '';
         const money = myProfile ? myProfile.money : 0;
         root.innerHTML = list.map(d => {
@@ -325,7 +333,7 @@ async function loadDistricts() {
             });
         });
     } catch (e) {
-        root.innerHTML = '<div class="empty">Не удалось загрузить районы.</div>';
+        showErrorState(root, 'Не удалось загрузить районы.', 'Попробуй ещё раз.', loadDistricts, '🗺');
         console.error('loadDistricts:', e);
     }
 }
@@ -338,13 +346,13 @@ function updateDvorHeader(p) {
     const status = document.getElementById('me-status');
     if (status) status.textContent = (p.status_name || 'УЛИЧНЫЙ АВТОРИТЕТ').toUpperCase();
     const money = document.getElementById('me-money');
-    if (money) money.textContent = formatNum(p.money);
+    if (money) money.textContent = formatNum(p.money || 0);
     const rating = document.getElementById('me-rating');
-    if (rating) rating.textContent = p.rating;
+    if (rating) rating.textContent = p.rating || 0;
     const energy = document.getElementById('me-energy');
-    if (energy) energy.textContent = `${p.energy}/${p.energy_max}`;
+    if (energy) energy.textContent = `${p.energy || 0}/${p.energy_max || 100}`;
     const lvl = document.getElementById('me-level');
-    if (lvl) lvl.textContent = Math.max(1, 1 + Math.floor(p.rating / 100));
+    if (lvl) lvl.textContent = Math.max(1, 1 + Math.floor((p.rating || 0) / 100));
     // Статы
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     set('stat-strength', p.strength);
@@ -353,11 +361,11 @@ function updateDvorHeader(p) {
     set('stat-bazar', p.bazar);
     // Эконом
     const bal = document.getElementById('econ-balance');
-    if (bal) bal.textContent = formatNum(p.money) + '₽';
+    if (bal) bal.textContent = formatNum(p.money || 0) + '₽';
     const inc = document.getElementById('econ-income');
-    if (inc) inc.textContent = formatNum(p.rating * 12) + '₽';
+    if (inc) inc.textContent = formatNum((p.rating || 0) * 12) + '₽/ч';
     // XP прогресс
-    const curXp = p.rating % 100;
+    const curXp = (p.rating || 0) % 100;
     const xpFill = document.getElementById('me-xp-fill');
     if (xpFill) xpFill.style.width = curXp + '%';
     const xpText = document.getElementById('me-xp-text');
@@ -372,7 +380,7 @@ function updateDvorHeader(p) {
     // Движение — отключаем если мало энергии
     const dv = document.getElementById('btn-dvizhenie');
     if (dv) {
-        if (p.energy < 15) {
+        if ((p.energy || 0) < 15) {
             dv.style.opacity = '0.5';
             dv.disabled = true;
         } else {
@@ -387,6 +395,75 @@ function formatNum(n) {
     if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
     if (n >= 10000) return (n / 1000).toFixed(1) + 'K';
     return n.toString();
+}
+
+// ---------------------------------------------------------------------------
+// Error / Empty / Skeleton — единый API для всех страниц
+// ---------------------------------------------------------------------------
+
+/**
+ * Показать error-state с кнопкой «Повторить».
+ * @param {HTMLElement|string} container — DOM-элемент или его id
+ * @param {string} message — основное сообщение
+ * @param {string} sub — пояснение (опц.)
+ * @param {function} onRetry — колбэк при клике на «Повторить»
+ * @param {string} ico — эмодзи (опц., дефолт 🚧)
+ */
+function showErrorState(container, message, sub = '', onRetry = null, ico = '🚧') {
+    const el = typeof container === 'string' ? document.getElementById(container) : container;
+    if (!el) return;
+    el.innerHTML = `
+        <div class="error-state">
+            <span class="error-state-ico">${escapeHtml(ico)}</span>
+            <div class="error-state-msg">${escapeHtml(message)}</div>
+            ${sub ? `<div class="error-state-sub">${escapeHtml(sub)}</div>` : ''}
+            ${onRetry ? `<button class="retry-btn" data-retry>Повторить</button>` : ''}
+        </div>
+    `;
+    if (onRetry) {
+        el.querySelector('[data-retry]')?.addEventListener('click', () => {
+            haptic('light');
+            onRetry();
+        });
+    }
+}
+
+/**
+ * Показать empty-state (когда данных просто нет, не ошибка).
+ */
+function showEmptyState(container, message, sub = '', ico = '📭') {
+    const el = typeof container === 'string' ? document.getElementById(container) : container;
+    if (!el) return;
+    el.innerHTML = `
+        <div class="empty-state">
+            <span class="empty-state-ico">${escapeHtml(ico)}</span>
+            <div class="empty-state-msg">${escapeHtml(message)}</div>
+            ${sub ? `<div class="empty-state-sub">${escapeHtml(sub)}</div>` : ''}
+        </div>
+    `;
+}
+
+/**
+ * Показать skeleton-плейсхолдер (карточка-силуэт).
+ * @param {HTMLElement|string} container
+ * @param {number} count — сколько карточек показать
+ */
+function showSkeleton(container, count = 3) {
+    const el = typeof container === 'string' ? document.getElementById(container) : container;
+    if (!el) return;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="skeleton-card">
+                <div class="skeleton skeleton-avatar"></div>
+                <div style="flex:1">
+                    <div class="skeleton skeleton-line medium"></div>
+                    <div class="skeleton skeleton-line short"></div>
+                </div>
+            </div>
+        `;
+    }
+    el.innerHTML = html;
 }
 
 // Главный экран — Двор
@@ -656,30 +733,32 @@ async function loadQuests() {
     const completedList = document.getElementById('completed-list');
     if (!activeList) return;
 
+    showSkeleton(activeList, 2);
     try {
         const data = await api('/api/quest/active');
         const quests = data.quests || [];
         if (quests.length === 0) {
-            activeList.innerHTML = '<div class="empty">Нет активных заданий. Иди в ⚡ Дела.</div>';
+            showEmptyState(activeList, 'Нет активных заданий.', 'Иди в ⚡ Дела — накопи опыт и бабки, потом вернёшься за наградой.', '📋');
         } else {
             activeList.innerHTML = quests.map(renderQuestCard).join('');
             bindQuestClaim();
         }
     } catch (e) {
-        activeList.innerHTML = '<div class="empty">Не удалось загрузить задания.</div>';
+        showErrorState(activeList, 'Не удалось загрузить задания.', 'Шруп не нашёл никого с работёнкой.', () => loadQuests(true), '📡');
         console.error('loadQuests active:', e);
     }
 
+    showSkeleton(completedList, 1);
     try {
         const data = await api('/api/quest/completed');
         const quests = data.quests || [];
         if (quests.length === 0) {
-            completedList.innerHTML = '<div class="empty">Пока ничего не сделал.</div>';
+            showEmptyState(completedList, 'Пока ничего не сделал.', 'Выполняй задания — здесь будет история твоих побед.', '🏆');
         } else {
             completedList.innerHTML = quests.map(r => renderQuestCard({...r, progress_pct: 100, current: r.target || 1, target: r.target || 1, completed: true, claimed: true})).join('');
         }
     } catch (e) {
-        completedList.innerHTML = '<div class="empty">Не удалось загрузить историю.</div>';
+        showErrorState(completedList, 'Не удалось загрузить историю.', 'Попробуй позже.', () => loadQuests(true), '📡');
         console.error('loadQuests completed:', e);
     }
 }
@@ -755,10 +834,11 @@ function bindQuestTabs() {
 function loadLockedQuests() {
     const lockedList = document.getElementById('locked-list');
     if (!lockedList) return;
+    showSkeleton(lockedList, 1);
     api('/api/quest/locked').then(data => {
         const quests = data.quests || [];
         if (quests.length === 0) {
-            lockedList.innerHTML = '<div class="empty">Скоро появятся новые задания.</div>';
+            showEmptyState(lockedList, 'Скоро появятся новые задания.', 'Качай левел и открывай новые.', '🔒');
             return;
         }
         const lockedIcons = { 'Свои люди': '👥', 'Чёрная машина': '🚗', 'Турникмен': '💪', 'Базарный': '🗣', 'Крыша района': '🏠', 'Дело века': '💰' };
@@ -789,7 +869,7 @@ function loadLockedQuests() {
             `;
         }).join('');
     }).catch(e => {
-        lockedList.innerHTML = '<div class="empty">Не удалось загрузить.</div>';
+        showErrorState(lockedList, 'Не удалось загрузить.', 'Попробуй позже.', loadLockedQuests, '📡');
         console.error('loadLockedQuests:', e);
     });
 }
@@ -801,13 +881,13 @@ function loadLockedQuests() {
 async function loadClan() {
     const root = document.getElementById('clan-root');
     if (!root) return;
-    root.innerHTML = '<div class="loader">Тащим братву...</div>';
+    showSkeleton(root, 3);
     try {
         const myData = await api('/api/clan/my');
         const lbData = await api('/api/clan/leaderboard?limit=10');
         renderClan(myData.clan, lbData.clans || []);
     } catch (e) {
-        root.innerHTML = '<div class="empty">Не удалось загрузить братву. Открой из Telegram.</div>';
+        showErrorState(root, 'Не удалось загрузить братву.', 'Шруп не дозвонился до пацанов.', loadClan, '📡');
         console.error('loadClan:', e);
     }
 }
@@ -911,12 +991,12 @@ function roleLabel(role) {
 async function loadAchievements() {
     const root = document.getElementById('achievements-list');
     if (!root) return;
-    root.innerHTML = '<div class="loader">Тащим ачивки...</div>';
+    showSkeleton(root, 4);
     try {
         const data = await api('/api/achievements');
         const items = data.items || [];
         if (items.length === 0) {
-            root.innerHTML = '<div class="empty">Ачивок пока нет.</div>';
+            showEmptyState(root, 'Ачивок пока нет.', 'Скоро появятся первые достижения.', '🏆');
             return;
         }
         const unlocked = items.filter(a => a.unlocked);
@@ -929,7 +1009,7 @@ async function loadAchievements() {
             ${locked.map(renderAchievement).join('')}
         `;
     } catch (e) {
-        root.innerHTML = '<div class="empty">Не удалось загрузить ачивки. Открой из Telegram.</div>';
+        showErrorState(root, 'Не удалось загрузить ачивки.', 'Попробуй позже.', loadAchievements, '🏆');
         console.error('loadAchievements:', e);
     }
 }
@@ -968,12 +1048,12 @@ async function loadBattle() {
             battle = await api('/api/battle/last');
         }
     } catch (e) {
-        versions.innerHTML = '<div class="empty">Не удалось загрузить бой. <a href="/profile">В профиль</a></div>';
+        showErrorState(versions, 'Не удалось загрузить бой.', 'Попробуй ещё раз.', () => loadBattle(), '🥊');
         return;
     }
 
     if (!battle) {
-        versions.innerHTML = '<div class="empty">Нет боёв. Гопни кого-нибудь!</div>';
+        showEmptyState(versions, 'Нет боёв.', 'Гопни кого-нибудь из Двора → ⚔ ДВИЖЕНИЕ.', '🥊');
         return;
     }
 

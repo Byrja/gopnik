@@ -23,16 +23,25 @@
             </div>
         </div>
         <div class="profile-currency">
-            <div class="coin"><span class="coin-icon">💵</span><span id="me-money">0</span> ₽</div>
-            <div class="coin coin--star"><span class="coin-icon">⭐</span><span id="me-rating">0</span></div>
-            <div class="coin coin--energy"><span class="coin-icon">⚡</span><span id="me-energy">0/0</span></div>
+            <div class="coin coin--money">
+                <img class="coin-icon" src="/static/icons/money.svg" alt="">
+                <span id="me-money">0</span> ₽
+            </div>
+            <div class="coin coin--star">
+                <img class="coin-icon" src="/static/icons/star.svg" alt="">
+                <span id="me-rating">0</span>
+            </div>
+            <div class="coin coin--energy">
+                <img class="coin-icon" src="/static/icons/energy.svg" alt="">
+                <span id="me-energy">0/0</span>
+            </div>
         </div>
     </header>
 
     <section class="stats-row">
         <div class="stat-cell"><div class="stat-ico">💪</div><div class="stat-val" id="stat-strength">0</div><div class="stat-lbl">СИЛА</div></div>
         <div class="stat-cell"><div class="stat-ico">🛡</div><div class="stat-val" id="stat-authority">0</div><div class="stat-lbl">АВТОРИТЕТ</div></div>
-        <div class="stat-cell"><div class="stat-ico">❤</div><div class="stat-val" id="stat-stamina">0</div><div class="stat-lbl">ВЫНОСЛ.</div></div>
+        <div class="stat-cell"><div class="stat-ico">❤</div><div class="stat-val" id="stat-stamina">0</div><div class="stat-lbl">ВЫНОСЛ</div></div>
         <div class="stat-cell"><div class="stat-ico">🗣</div><div class="stat-val" id="stat-bazar">0</div><div class="stat-lbl">БАЗАР</div></div>
     </section>
 
@@ -47,12 +56,12 @@
             <button class="action-tile" data-action="turnik">
                 <img class="action-tile-img" src="/static/icons/turnik.svg">
                 <div class="action-tile-name">ТУРНИК</div>
-                <div class="action-tile-cost">8⚡ · +1💪</div>
+                <div class="action-tile-cost">8⚡ · <span class="stat-reward str">+1💪</span></div>
             </button>
             <button class="action-tile" data-action="bazar">
                 <img class="action-tile-img" src="/static/icons/bazar.svg">
                 <div class="action-tile-name">БАЗАР</div>
-                <div class="action-tile-cost">6⚡ · +1🗣</div>
+                <div class="action-tile-cost">6⚡ · <span class="stat-reward baz">+1🗣</span></div>
             </button>
             <button class="action-tile" data-action="mutka">
                 <img class="action-tile-img" src="/static/icons/mutka.svg">
@@ -77,7 +86,7 @@
         <button class="action-tile action-tile--small" data-action="chaynaya">
             <img class="action-tile-img" src="/static/icons/chaynaya.svg">
             <div class="action-tile-name">ЧАЙНАЯ</div>
-            <div class="action-tile-cost">750₽ · +⚡</div>
+            <div class="action-tile-cost">750₽ · <span class="stat-reward energy">+30⚡</span></div>
         </button>
         <button class="action-tile action-tile--small" data-action="nychka">
             <img class="action-tile-img" src="/static/icons/nychka.svg">
@@ -92,20 +101,32 @@
     </section>
 
     <section class="economy-strip">
-        <div class="econ-cell"><div class="econ-lbl">⏱ Доход/час</div><div class="econ-val" id="econ-income">—</div></div>
-        <div class="econ-cell"><div class="econ-lbl">💵 Баланс</div><div class="econ-val" id="econ-balance">—</div></div>
+        <div class="econ-cell"><div class="econ-lbl">⏱ Доход/час</div><div class="econ-val" id="econ-income">0₽/ч</div></div>
+        <div class="econ-cell"><div class="econ-lbl">💵 Баланс</div><div class="econ-val" id="econ-balance">0₽</div></div>
         <div class="econ-cell"><div class="econ-lbl">📈 Бонус онлайн</div><div class="econ-val">+25%</div></div>
     </section>
 
     <div id="toast" class="toast hidden"></div>
-
-    <nav class="bottom-nav bottom-nav--dvor">
-        <a href="/" class="nav-item active">🏠<br><span>ДВОР</span></a>
-        <a href="/quests" class="nav-item">📜<br><span>ЗАДАНИЯ</span></a>
-        <a href="/bosses" class="nav-item">🥊<br><span>БОССЫ</span></a>
-        <a href="/clan" class="nav-item">👥<br><span>БРАТВА</span></a>
-    </nav>
 </div>
+
+<nav class="bottom-nav bottom-nav--dvor">
+    <a href="/" class="nav-item active">
+        <img class="nav-ico" src="/static/icons/nav-dvor.svg" alt="">
+        <span>ДВОР</span>
+    </a>
+    <a href="/quests" class="nav-item">
+        <img class="nav-ico" src="/static/icons/nav-quests.svg" alt="">
+        <span>ЗАДАНИЯ</span>
+    </a>
+    <a href="/bosses" class="nav-item">
+        <img class="nav-ico" src="/static/icons/nav-bosses.svg" alt="">
+        <span>БОССЫ</span>
+    </a>
+    <a href="/clan" class="nav-item">
+        <img class="nav-ico" src="/static/icons/nav-clan.svg" alt="">
+        <span>БРАТВА</span>
+    </a>
+</nav>
 {% endblock %}
 {% block scripts %}
 <script>

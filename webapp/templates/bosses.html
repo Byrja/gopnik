@@ -22,10 +22,22 @@
     <div id="toast" class="toast hidden"></div>
 
     <nav class="bottom-nav">
-        <a href="/" class="nav-item">🏠<br><span>Двор</span></a>
-        <a href="/quests" class="nav-item">📜<br><span>Задания</span></a>
-        <a href="/bosses" class="nav-item active">🥊<br><span>Боссы</span></a>
-        <a href="/clan" class="nav-item">👥<br><span>Братва</span></a>
+        <a href="/" class="nav-item">
+            <img class="nav-ico" src="/static/icons/nav-dvor.svg" alt="">
+            <span>ДВОР</span>
+        </a>
+        <a href="/quests" class="nav-item">
+            <img class="nav-ico" src="/static/icons/nav-quests.svg" alt="">
+            <span>ЗАДАНИЯ</span>
+        </a>
+        <a href="/bosses" class="nav-item active">
+            <img class="nav-ico" src="/static/icons/nav-bosses.svg" alt="">
+            <span>БОССЫ</span>
+        </a>
+        <a href="/clan" class="nav-item">
+            <img class="nav-ico" src="/static/icons/nav-clan.svg" alt="">
+            <span>БРАТВА</span>
+        </a>
     </nav>
 </div>
 {% endblock %}
@@ -35,15 +47,17 @@ loadBosses();
 
 async function loadBosses() {
     const list = document.getElementById('boss-list');
+    if (!list) return;
+    showSkeleton(list, 4);
     try {
         const data = await api('/api/bosses');
         if (!data.bosses || !data.bosses.length) {
-            list.innerHTML = '<div class="empty">Пока никого нет.</div>';
+            showEmptyState(list, 'Боссов пока нет.', 'Шруп ищет подходящих кандидатов.', '🥊');
             return;
         }
         list.innerHTML = data.bosses.map(b => bossCard(b)).join('');
     } catch (e) {
-        list.innerHTML = `<div class="empty">Ошибка: ${escapeHtml(e.message)}</div>`;
+        showErrorState(list, 'Не удалось загрузить боссов.', 'Шруп не выходит на связь.', loadBosses, '📡');
     }
 }
 
@@ -81,12 +95,12 @@ async function openBossModal(bossCode) {
     const modal = document.getElementById('boss-modal');
     const body = document.getElementById('boss-modal-body');
     modal.classList.remove('hidden');
-    body.innerHTML = '<div class="loader">Грузим босса...</div>';
+    showSkeleton(body, 1);
     try {
         const b = await api(`/api/bosses/${bossCode}`);
         body.innerHTML = renderBossModal(b);
     } catch (e) {
-        body.innerHTML = `<div class="empty">Ошибка: ${escapeHtml(e.message)}</div>`;
+        showErrorState(body, 'Не удалось открыть босса.', 'Попробуй ещё раз.', () => openBossModal(bossCode), '📡');
     }
 }
 

@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <!-- Тренировка: кулак в бинтах -->
-  <g>
-    <!-- Запястье (рукав) -->
-    <path d="M30 90 L70 90 L66 75 L34 75 Z" fill="#1a1612"/>
-    <rect x="34" y="78" width="32" height="3" fill="#e8a44a"/>
-    <rect x="34" y="83" width="32" height="3" fill="#e8a44a"/>
-    <!-- Кулак -->
-    <path d="M22 75 Q20 55 30 45 Q40 38 55 38 Q72 38 78 50 Q82 65 76 75 Z" fill="#1a1612"/>
-    <!-- Бинты - полоски -->
-    <path d="M22 65 Q50 62 78 65" stroke="#e8a44a" stroke-width="3" fill="none"/>
-    <path d="M22 70 Q50 67 78 70" stroke="#e8a44a" stroke-width="3" fill="none"/>
-    <!-- Костяшки -->
-    <circle cx="32" cy="50" r="3" fill="#e8a44a"/>
-    <circle cx="42" cy="46" r="3" fill="#e8a44a"/>
-    <circle cx="52" cy="44" r="3" fill="#e8a44a"/>
-    <circle cx="62" cy="46" r="3" fill="#e8a44a"/>
-    <circle cx="72" cy="50" r="3" fill="#e8a44a"/>
-  </g>
+    <!-- Тренировка: гантель (две штанги + перекладина) -->
+    <!-- Левая штанга -->
+    <rect x="10" y="40" width="20" height="20" rx="3" fill="#1a1612" stroke="#e8a44a" stroke-width="2.5"/>
+    <rect x="8" y="30" width="8" height="40" rx="2" fill="#1a1612" stroke="#e8a44a" stroke-width="2"/>
+    <!-- Правая штанга -->
+    <rect x="70" y="40" width="20" height="20" rx="3" fill="#1a1612" stroke="#e8a44a" stroke-width="2.5"/>
+    <rect x="84" y="30" width="8" height="40" rx="2" fill="#1a1612" stroke="#e8a44a" stroke-width="2"/>
+    <!-- Перекладина -->
+    <rect x="30" y="46" width="40" height="8" fill="#3a2f24" stroke="#e8a44a" stroke-width="1.5"/>
+    <!-- Блины-блики -->
+    <line x1="14" y1="34" x2="10" y2="34" stroke="#e8a44a" stroke-width="1.5"/>
+    <line x1="14" y1="66" x2="10" y2="66" stroke="#e8a44a" stroke-width="1.5"/>
+    <line x1="86" y1="34" x2="90" y2="34" stroke="#e8a44a" stroke-width="1.5"/>
+    <line x1="86" y1="66" x2="90" y2="66" stroke="#e8a44a" stroke-width="1.5"/>
+    <!-- Звёзды-искры -->
+    <path d="M50 18 L52 23 L57 23 L53 27 L55 32 L50 29 L45 32 L47 27 L43 23 L48 23 Z" fill="#e8a44a" opacity="0.6"/>
+    <path d="M50 82 L51 85 L54 85 L52 87 L53 90 L50 88 L47 90 L48 87 L46 85 L49 85 Z" fill="#e8a44a" opacity="0.6"/>
 </svg>

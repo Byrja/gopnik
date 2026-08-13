@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+    <!-- Два пацана (братва) -->
+    <!-- Левый -->
+    <circle cx="32" cy="30" r="11" fill="#1a1612" stroke="#e8a44a" stroke-width="2.5"/>
+    <path d="M32 22 Q26 22 24 28 L28 30 L24 32 L28 35 L24 38 Q26 42 32 42 Q38 42 40 38 L36 35 L40 32 L36 30 L40 28 Q38 22 32 22 Z"
+          fill="#e8a44a" opacity="0.4"/>
+    <path d="M18 88 Q18 58 32 58 Q46 58 46 88 Z"
+          fill="#1a1612" stroke="#e8a44a" stroke-width="2.5"/>
+    <!-- Правый -->
+    <circle cx="68" cy="30" r="11" fill="#1a1612" stroke="#e8a44a" stroke-width="2.5"/>
+    <path d="M68 22 Q62 22 60 28 L64 30 L60 32 L64 35 L60 38 Q62 42 68 42 Q74 42 76 38 L72 35 L76 32 L72 30 L76 28 Q74 22 68 22 Z"
+          fill="#e8a44a" opacity="0.4"/>
+    <path d="M54 88 Q54 58 68 58 Q82 58 82 88 Z"
+          fill="#1a1612" stroke="#e8a44a" stroke-width="2.5"/>
+</svg>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+    <!-- Боксёрская перчатка -->
+    <path d="M25 30 Q20 32 18 42 L18 65 Q18 75 25 78 L70 78 Q78 75 78 65 L78 40 Q78 30 70 28 Z"
+          fill="#1a1612" stroke="#e8a44a" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Пальцы-загибы -->
+    <path d="M30 28 Q35 20 50 22 Q65 20 70 28"
+          fill="none" stroke="#e8a44a" stroke-width="2"/>
+    <line x1="38" y1="32" x2="38" y2="44" stroke="#e8a44a" stroke-width="1.5"/>
+    <line x1="48" y1="30" x2="48" y2="44" stroke="#e8a44a" stroke-width="1.5"/>
+    <line x1="58" y1="32" x2="58" y2="44" stroke="#e8a44a" stroke-width="1.5"/>
+    <!-- Большой палец -->
+    <path d="M20 50 Q12 55 12 65 Q12 72 20 72"
+          fill="#1a1612" stroke="#e8a44a" stroke-width="2"/>
+    <!-- Молния на перчатке -->
+    <path d="M52 50 L46 60 L52 60 L48 70 L58 56 L52 56 Z"
+          fill="#d04545" stroke="#fff" stroke-width="0.5" stroke-linejoin="round"/>
+</svg>

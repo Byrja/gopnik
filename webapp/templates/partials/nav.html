@@ -1,7 +1,19 @@
 {# Единый bottom-nav для всех страниц кроме Двора. Двор (/) рендерит свой с active. #}
 <nav class="bottom-nav">
-    <a href="/" class="nav-item{% if nav == 'dvor' %} active{% endif %}">🏠<br><span>ДВОР</span></a>
-    <a href="/quests" class="nav-item{% if nav == 'quests' %} active{% endif %}">📜<br><span>ЗАДАНИЯ</span></a>
-    <a href="/bosses" class="nav-item{% if nav == 'bosses' %} active{% endif %}">🥊<br><span>БОССЫ</span></a>
-    <a href="/clan" class="nav-item{% if nav == 'clan' %} active{% endif %}">👥<br><span>БРАТВА</span></a>
+    <a href="/" class="nav-item{% if nav == 'dvor' %} active{% endif %}">
+        <img class="nav-ico" src="/static/icons/nav-dvor.svg" alt="">
+        <span>ДВОР</span>
+    </a>
+    <a href="/quests" class="nav-item{% if nav == 'quests' %} active{% endif %}">
+        <img class="nav-ico" src="/static/icons/nav-quests.svg" alt="">
+        <span>ЗАДАНИЯ</span>
+    </a>
+    <a href="/bosses" class="nav-item{% if nav == 'bosses' %} active{% endif %}">
+        <img class="nav-ico" src="/static/icons/nav-bosses.svg" alt="">
+        <span>БОССЫ</span>
+    </a>
+    <a href="/clan" class="nav-item{% if nav == 'clan' %} active{% endif %}">
+        <img class="nav-ico" src="/static/icons/nav-clan.svg" alt="">
+        <span>БРАТВА</span>
+    </a>
 </nav>

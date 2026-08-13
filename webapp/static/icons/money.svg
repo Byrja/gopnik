@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+    <!-- Деньги: купюра с лентой -->
+    <rect x="14" y="28" width="72" height="44" rx="3" fill="#2a4a2a" stroke="#e8a44a" stroke-width="2"/>
+    <rect x="20" y="34" width="60" height="32" fill="#1a3a1a"/>
+    <circle cx="50" cy="50" r="10" fill="none" stroke="#e8a44a" stroke-width="2"/>
+    <text x="50" y="55" font-family="Bebas Neue" font-size="14" font-weight="900" text-anchor="middle" fill="#e8a44a">₽</text>
+    <!-- Углы -->
+    <circle cx="22" cy="36" r="1.5" fill="#e8a44a"/>
+    <circle cx="78" cy="36" r="1.5" fill="#e8a44a"/>
+    <circle cx="22" cy="64" r="1.5" fill="#e8a44a"/>
+    <circle cx="78" cy="64" r="1.5" fill="#e8a44a"/>
+</svg>
